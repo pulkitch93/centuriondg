@@ -68,9 +68,6 @@ export default function Dashboard() {
               <Link to="/sites">
                 <Button variant="outline">Job Board</Button>
               </Link>
-              <Link to="/performance">
-                <Button variant="outline">Performance</Button>
-              </Link>
             </div>
           </div>
         </div>
