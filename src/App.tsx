@@ -34,8 +34,8 @@ const App = () => (
         <div className="flex flex-col min-h-screen">
           <div className="flex-1">
             <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/marketing" element={<Marketing />} />
+              <Route path="/" element={<Marketing />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/sites" element={<Sites />} />
               <Route path="/sites/new" element={<NewSite />} />
               <Route path="/scheduler" element={<Scheduler />} />
