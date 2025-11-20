@@ -45,6 +45,8 @@ export interface DispatchTicket {
   eta?: string;
   issues: Issue[];
   notes?: string;
+  customerRating?: number; // 1-5 stars
+  fuelUsed?: number; // gallons
 }
 
 export interface Issue {
