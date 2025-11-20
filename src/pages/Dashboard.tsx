@@ -37,6 +37,9 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">Intelligent Earthwork Logistics</p>
             </div>
             <div className="flex gap-3">
+              <Link to="/operations">
+                <Button variant="default" className="bg-primary">Operations Center</Button>
+              </Link>
               <Link to="/materials">
                 <Button variant="outline">Materials Hub</Button>
               </Link>
@@ -50,12 +53,10 @@ export default function Dashboard() {
                 <Button variant="outline">Live Tracking</Button>
               </Link>
               <Link to="/scheduler">
-                <Button variant="outline">View Scheduler</Button>
+                <Button variant="outline">Scheduler</Button>
               </Link>
               <Link to="/sites">
-                <Button className="bg-primary hover:bg-primary-dark">
-                  View Job Board
-                </Button>
+                <Button variant="outline">Job Board</Button>
               </Link>
             </div>
           </div>

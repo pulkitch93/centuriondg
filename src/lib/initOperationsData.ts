@@ -1,0 +1,205 @@
+import { Job, OperationsAlert, ShiftReport } from '@/types/operations';
+import { operationsStorage } from './operationsStorage';
+
+export function initializeOperationsData() {
+  const existingJobs = operationsStorage.getJobs();
+  const existingAlerts = operationsStorage.getAlerts();
+  const existingReports = operationsStorage.getShiftReports();
+  
+  if (existingJobs.length > 0 && existingAlerts.length > 0) {
+    return; // Data already initialized
+  }
+
+  const now = new Date();
+
+  // Sample Jobs
+  const jobs: Job[] = [
+    {
+      id: 'J-3001',
+      scheduleId: 'DS-5001',
+      exportSiteId: 'EX-103',
+      importSiteId: 'IM-202',
+      haulerId: 'hauler-1',
+      volumePlanned: 3000,
+      volumeActual: 2040,
+      trucksActive: 4,
+      trucksAssigned: 4,
+      status: 'delivering',
+      startTime: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(),
+      estimatedCompletion: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
+      alerts: [],
+      createdAt: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'J-3002',
+      scheduleId: 'DS-5002',
+      exportSiteId: 'EX-101',
+      importSiteId: 'IM-201',
+      haulerId: 'hauler-2',
+      volumePlanned: 2000,
+      volumeActual: 840,
+      trucksActive: 3,
+      trucksAssigned: 3,
+      status: 'in-route',
+      startTime: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
+      estimatedCompletion: new Date(now.getTime() + 4 * 60 * 60 * 1000).toISOString(),
+      alerts: ['alert-001'],
+      createdAt: new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'J-3003',
+      scheduleId: 'DS-5003',
+      exportSiteId: 'EX-102',
+      importSiteId: 'IM-203',
+      haulerId: 'hauler-3',
+      volumePlanned: 1200,
+      volumeActual: 1068,
+      trucksActive: 2,
+      trucksAssigned: 2,
+      status: 'loading',
+      startTime: new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString(),
+      estimatedCompletion: new Date(now.getTime() + 1 * 60 * 60 * 1000).toISOString(),
+      alerts: ['alert-003'],
+      notes: 'Treatment required before disposal',
+      createdAt: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'J-3004',
+      exportSiteId: 'EX-101',
+      importSiteId: 'IM-203',
+      haulerId: 'hauler-4',
+      volumePlanned: 4000,
+      volumeActual: 0,
+      trucksActive: 0,
+      trucksAssigned: 2,
+      status: 'pending',
+      startTime: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
+      estimatedCompletion: new Date(now.getTime() + 10 * 60 * 60 * 1000).toISOString(),
+      alerts: ['alert-002'],
+      createdAt: now.toISOString(),
+    },
+    {
+      id: 'J-3005',
+      exportSiteId: 'EX-103',
+      importSiteId: 'IM-201',
+      haulerId: 'hauler-1',
+      volumePlanned: 1500,
+      volumeActual: 1500,
+      trucksActive: 0,
+      trucksAssigned: 2,
+      status: 'completed',
+      startTime: new Date(now.getTime() - 10 * 60 * 60 * 1000).toISOString(),
+      estimatedCompletion: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
+      actualCompletion: new Date(now.getTime() - 1.5 * 60 * 60 * 1000).toISOString(),
+      alerts: [],
+      createdAt: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString(),
+    },
+  ];
+
+  // Sample AI Alerts
+  const alerts: OperationsAlert[] = [
+    {
+      id: 'alert-001',
+      type: 'weather',
+      severity: 'high',
+      title: 'Delay Risk (62%)',
+      message: 'Storm expected at 3pm near IM-201. Consider rescheduling deliveries or switching to covered trucks.',
+      jobId: 'J-3002',
+      siteId: 'IM-201',
+      riskPercentage: 62,
+      timestamp: new Date(now.getTime() - 30 * 60 * 1000).toISOString(),
+      acknowledged: false,
+      resolved: false,
+    },
+    {
+      id: 'alert-002',
+      type: 'utilization',
+      severity: 'medium',
+      title: 'Under-Utilization',
+      message: 'Only 2 trucks dispatched for 4,000 CY backlog at EX-103. Consider adding more capacity to meet timeline.',
+      jobId: 'J-3004',
+      siteId: 'EX-103',
+      timestamp: new Date(now.getTime() - 45 * 60 * 1000).toISOString(),
+      acknowledged: false,
+      resolved: false,
+    },
+    {
+      id: 'alert-003',
+      type: 'quality',
+      severity: 'high',
+      title: 'Load Quality Flag',
+      message: 'GT-002 contains low-level lead contamination. Confirm destination requirements before proceeding with delivery.',
+      jobId: 'J-3003',
+      siteId: 'EX-102',
+      timestamp: new Date(now.getTime() - 60 * 60 * 1000).toISOString(),
+      acknowledged: true,
+      acknowledgedBy: 'Operations Manager',
+      acknowledgedAt: new Date(now.getTime() - 55 * 60 * 1000).toISOString(),
+      resolved: false,
+    },
+    {
+      id: 'alert-004',
+      type: 'idle',
+      severity: 'medium',
+      title: 'Truck Idle Alert',
+      message: 'Driver Marcus Hill (NC-8472) idle for 45 minutes at pickup location. Check for site access issues.',
+      driverId: 'driver-1',
+      siteId: 'EX-103',
+      timestamp: new Date(now.getTime() - 20 * 60 * 1000).toISOString(),
+      acknowledged: false,
+      resolved: false,
+    },
+    {
+      id: 'alert-005',
+      type: 'route-disruption',
+      severity: 'low',
+      title: 'Route Disruption',
+      message: 'Minor traffic incident on I-77 Southbound. Add 15-20 minutes to ETA for Job J-3001.',
+      jobId: 'J-3001',
+      timestamp: new Date(now.getTime() - 10 * 60 * 1000).toISOString(),
+      acknowledged: true,
+      acknowledgedBy: 'Dispatcher',
+      acknowledgedAt: new Date(now.getTime() - 8 * 60 * 1000).toISOString(),
+      resolved: true,
+      resolvedAt: new Date(now.getTime() - 5 * 60 * 1000).toISOString(),
+    },
+  ];
+
+  // Sample Shift Report
+  const reports: ShiftReport[] = [
+    {
+      id: 'SR-001',
+      date: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      shift: 'day',
+      totalJobs: 8,
+      completedJobs: 7,
+      delayedJobs: 1,
+      totalVolume: 12500,
+      trucksActive: 15,
+      incidents: 2,
+      efficiency: 92,
+      topPerformer: 'driver-1',
+      notes: 'Excellent performance overall. One weather delay on Job J-2945.',
+      createdAt: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: 'SR-002',
+      date: new Date().toISOString().split('T')[0],
+      shift: 'day',
+      totalJobs: 5,
+      completedJobs: 1,
+      delayedJobs: 0,
+      totalVolume: 5540,
+      trucksActive: 9,
+      incidents: 1,
+      efficiency: 68,
+      topPerformer: 'driver-4',
+      notes: 'Shift in progress. Quality flag on J-3003 being monitored.',
+      createdAt: now.toISOString(),
+    },
+  ];
+
+  operationsStorage.setJobs(jobs);
+  operationsStorage.setAlerts(alerts);
+  operationsStorage.setShiftReports(reports);
+}
