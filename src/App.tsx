@@ -9,6 +9,7 @@ import NewSite from "./pages/NewSite";
 import Scheduler from "./pages/Scheduler";
 import ScheduleDetail from "./pages/ScheduleDetail";
 import MaterialsHub from "./pages/MaterialsHub";
+import MaterialProfile from "./pages/MaterialProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/scheduler" element={<Scheduler />} />
           <Route path="/schedule/:id" element={<ScheduleDetail />} />
           <Route path="/materials" element={<MaterialsHub />} />
+          <Route path="/materials/:id" element={<MaterialProfile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

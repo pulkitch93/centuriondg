@@ -6,16 +6,21 @@ import { Badge } from '@/components/ui/badge';
 import { storage } from '@/lib/storage';
 import { generateMatches } from '@/lib/matching';
 import { Site, Match } from '@/types/site';
+import { GeotechReport } from '@/types/geotechnical';
+import { geotechStorage } from '@/lib/geotechnicalStorage';
 import { Plus, ArrowLeft, Sparkles, MapPin, Calendar, Package } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import MaterialsMap from '@/components/MaterialsMap';
 
 export default function Sites() {
   const [sites, setSites] = useState<Site[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [reports, setReports] = useState<GeotechReport[]>([]);
 
   useEffect(() => {
     setSites(storage.getSites());
     setMatches(storage.getMatches());
+    setReports(geotechStorage.getReports());
   }, []);
 
   const runAIMatching = () => {
@@ -36,41 +41,65 @@ export default function Sites() {
     }
   };
 
-  const SiteCard = ({ site }: { site: Site }) => (
-    <Card className="p-6 hover:shadow-elevated transition-shadow">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="font-semibold text-lg text-foreground">{site.name}</h3>
-          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-            <MapPin className="w-3 h-3" />
-            {site.location}
-          </p>
+  const SiteCard = ({ site }: { site: Site }) => {
+    // Find geotechnical report for this site
+    const siteReport = reports.find(r => r.siteId === site.id);
+    
+    return (
+      <Card className="p-6 hover:shadow-elevated transition-shadow">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-lg text-foreground">{site.name}</h3>
+            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+              <MapPin className="w-3 h-3" />
+              {site.location}
+            </p>
+          </div>
+          <div className="text-right">
+            <Badge className={getStatusColor(site.status)}>{site.status}</Badge>
+            {siteReport && (
+              <div className="mt-2">
+                <Link to={`/materials/${siteReport.id}`}>
+                  <Badge variant="outline" className="border-accent text-accent cursor-pointer hover:bg-accent hover:text-accent-foreground">
+                    Geo Report
+                  </Badge>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
-        <Badge className={getStatusColor(site.status)}>{site.status}</Badge>
-      </div>
 
-      <div className="space-y-2 text-sm">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Package className="w-4 h-4" />
-          <span>{site.volume.toLocaleString()} yd³ • {site.soilType}</span>
+        <div className="space-y-2 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Package className="w-4 h-4" />
+            <span>{site.volume.toLocaleString()} yd³ • {site.soilType}</span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Calendar className="w-4 h-4" />
+            <span>{new Date(site.scheduleStart).toLocaleDateString()} - {new Date(site.scheduleEnd).toLocaleDateString()}</span>
+          </div>
+          <div className="text-muted-foreground">
+            Owner: {site.projectOwner}
+          </div>
+          {site.contaminated && (
+            <Badge variant="destructive" className="mt-2">Contaminated</Badge>
+          )}
+          {siteReport && (
+            <div className="pt-2 border-t border-border">
+              <p className="text-xs text-muted-foreground">Soil Classification:</p>
+              <Badge className="mt-1" variant="outline">
+                {siteReport.classification.replace('-', ' ')} • Score: {siteReport.suitabilityScore}
+              </Badge>
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Calendar className="w-4 h-4" />
-          <span>{new Date(site.scheduleStart).toLocaleDateString()} - {new Date(site.scheduleEnd).toLocaleDateString()}</span>
-        </div>
-        <div className="text-muted-foreground">
-          Owner: {site.projectOwner}
-        </div>
-        {site.contaminated && (
-          <Badge variant="destructive" className="mt-2">Contaminated</Badge>
-        )}
-      </div>
 
-      <Link to={`/sites/${site.id}`} className="mt-4 block">
-        <Button variant="outline" className="w-full">View Details</Button>
-      </Link>
-    </Card>
-  );
+        <Link to={`/sites/${site.id}`} className="mt-4 block">
+          <Button variant="outline" className="w-full">View Details</Button>
+        </Link>
+      </Card>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -112,6 +141,7 @@ export default function Sites() {
             <TabsTrigger value="export">Export ({exportSites.length})</TabsTrigger>
             <TabsTrigger value="import">Import ({importSites.length})</TabsTrigger>
             <TabsTrigger value="matches">AI Matches ({matches.length})</TabsTrigger>
+            <TabsTrigger value="map">Materials Map</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
@@ -194,6 +224,10 @@ export default function Sites() {
                 })
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="map">
+            <MaterialsMap sites={sites} reports={reports} />
           </TabsContent>
         </Tabs>
       </main>
