@@ -13,6 +13,7 @@ import { Schedule, Hauler } from '@/types/scheduler';
 import { Site, Match } from '@/types/site';
 import { ArrowLeft, Calendar, Sparkles, TrendingUp, Truck, AlertTriangle, Download, GripVertical, Eye, Brain, Clock, Zap } from 'lucide-react';
 import WhatIfSimulator from '@/components/WhatIfSimulator';
+import { MitigationPlanDialog } from '@/components/MitigationPlanDialog';
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/PageHeader';
 
@@ -24,6 +25,7 @@ export default function Scheduler() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSimulator, setShowSimulator] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [showMitigationPlan, setShowMitigationPlan] = useState(false);
   const { toast } = useToast();
 
   const sensors = useSensors(
@@ -315,7 +317,12 @@ export default function Scheduler() {
                   </div>
                 </div>
                 <div className="pt-2 mt-2 border-t border-border">
-                  <Button size="sm" variant="outline" className="w-full">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setShowMitigationPlan(true)}
+                  >
                     View Mitigation Plan
                   </Button>
                 </div>
@@ -601,6 +608,11 @@ export default function Scheduler() {
         open={showSimulator}
         onOpenChange={setShowSimulator}
         onApplyChanges={handleSimulatorApply}
+      />
+
+      <MitigationPlanDialog
+        open={showMitigationPlan}
+        onOpenChange={setShowMitigationPlan}
       />
     </div>
   );
