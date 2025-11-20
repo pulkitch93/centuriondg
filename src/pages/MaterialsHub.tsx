@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { geotechStorage } from '@/lib/geotechnicalStorage';
 import { GeotechReport, SoilClassification } from '@/types/geotechnical';
-import { ArrowLeft, Plus, Search, FlaskConical, FileText, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Plus, Search, FlaskConical, FileText, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
 import ReportUpload from '@/components/ReportUpload';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function MaterialsHub() {
   const [reports, setReports] = useState<GeotechReport[]>([]);
@@ -78,24 +79,16 @@ export default function MaterialsHub() {
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-card shadow-subtle">
         <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Materials Intelligence Hub</h1>
-                <p className="text-sm text-muted-foreground">Geotechnical reports & soil classification</p>
-              </div>
-            </div>
-            <Button onClick={() => setShowUpload(true)} className="bg-primary hover:bg-primary-dark">
-              <Plus className="w-4 h-4 mr-2" />
-              Upload Report
-            </Button>
-          </div>
+          <PageHeader 
+            title="Materials Intelligence Hub" 
+            description="Geotechnical reports & soil classification"
+            actions={
+              <Button onClick={() => setShowUpload(true)} className="bg-primary hover:bg-primary-dark">
+                <Plus className="w-4 h-4 mr-2" />
+                Upload Report
+              </Button>
+            }
+          />
         </div>
       </header>
 

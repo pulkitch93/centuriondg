@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { storage } from '@/lib/storage';
 import { Site, SiteType, SoilType } from '@/types/site';
-import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function NewSite() {
   const navigate = useNavigate();
@@ -67,18 +67,10 @@ export default function NewSite() {
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-card shadow-subtle">
         <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Link to="/sites">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Sites
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Create New Site</h1>
-              <p className="text-sm text-muted-foreground">Add an export or import site</p>
-            </div>
-          </div>
+          <PageHeader 
+            title="Create New Site" 
+            description="Add an export or import site"
+          />
         </div>
       </header>
 
