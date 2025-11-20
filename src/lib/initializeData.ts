@@ -6,6 +6,8 @@ import { storage } from './storage';
 import { schedulerStorage } from './schedulerStorage';
 import { geotechStorage } from './geotechnicalStorage';
 import { dispatchStorage } from './dispatchStorage';
+import { initializeComplianceData } from './initComplianceData';
+import { initializeOperationsData } from './initOperationsData';
 
 function initializeDriversAndDispatches() {
   // Initialize drivers if none exist
@@ -306,11 +308,7 @@ export function initializeSampleData() {
   if (hasInitializedSites) {
     // Still initialize drivers, dispatches, compliance, and operations even if sites exist
     initializeDriversAndDispatches();
-    
-    const { initializeComplianceData } = require('./initComplianceData');
     initializeComplianceData();
-    
-    const { initializeOperationsData } = require('./initOperationsData');
     initializeOperationsData();
     return;
   }
@@ -1220,10 +1218,8 @@ export function initializeSampleData() {
   initializeDriversAndDispatches();
   
   // Initialize compliance data
-  const { initializeComplianceData } = require('./initComplianceData');
   initializeComplianceData();
   
   // Initialize operations data
-  const { initializeOperationsData } = require('./initOperationsData');
   initializeOperationsData();
 }
