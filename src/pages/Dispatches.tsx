@@ -14,6 +14,7 @@ import { toast } from '@/hooks/use-toast';
 import { dispatchStorage } from '@/lib/dispatchStorage';
 import { schedulerStorage } from '@/lib/schedulerStorage';
 import { storage } from '@/lib/storage';
+import { initializeDispatchData } from '@/lib/initDispatchData';
 import { DispatchTicket, Driver } from '@/types/dispatch';
 import { Hauler, Schedule } from '@/types/scheduler';
 import { Site } from '@/types/site';
@@ -34,6 +35,7 @@ export default function Dispatches() {
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
+    initializeDispatchData(); // Initialize sample data
     loadData();
   }, []);
 
