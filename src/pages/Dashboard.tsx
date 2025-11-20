@@ -8,7 +8,7 @@ import { dispatchStorage } from '@/lib/dispatchStorage';
 import { operationsStorage } from '@/lib/operationsStorage';
 import { initializeSampleData } from '@/lib/initializeData';
 import { Site, Match } from '@/types/site';
-import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck, Shield } from 'lucide-react';
+import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck, Shield, BarChart3 } from 'lucide-react';
 
 export default function Dashboard() {
   const [sites, setSites] = useState<Site[]>([]);
@@ -67,6 +67,9 @@ export default function Dashboard() {
               </Link>
               <Link to="/sites">
                 <Button variant="outline">Job Board</Button>
+              </Link>
+              <Link to="/performance">
+                <Button variant="outline">Performance</Button>
               </Link>
             </div>
           </div>
@@ -142,16 +145,29 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <Card className="mt-8 p-8 shadow-elevated text-center">
-          <Sparkles className="w-12 h-12 text-accent mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground mb-2">Start Creating Sites</h2>
-          <p className="text-muted-foreground mb-6">Add export and import sites to let our AI find the best matches</p>
-          <Link to="/sites">
-            <Button size="lg" className="bg-primary hover:bg-primary-dark">
-              Go to Job Board
-            </Button>
-          </Link>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+          <Card className="p-8 shadow-elevated text-center">
+            <Sparkles className="w-12 h-12 text-accent mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-foreground mb-2">Start Creating Sites</h2>
+            <p className="text-muted-foreground mb-6">Add export and import sites to let our AI find the best matches</p>
+            <Link to="/sites">
+              <Button size="lg" className="bg-primary hover:bg-primary-dark">
+                Go to Job Board
+              </Button>
+            </Link>
+          </Card>
+
+          <Card className="p-8 shadow-elevated text-center">
+            <BarChart3 className="w-12 h-12 text-primary mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-foreground mb-2">Executive Intelligence</h2>
+            <p className="text-muted-foreground mb-6">Track KPIs, profitability, forecasts, and sustainability metrics</p>
+            <Link to="/performance">
+              <Button size="lg" className="bg-primary hover:bg-primary-dark">
+                View Performance Dashboard
+              </Button>
+            </Link>
+          </Card>
+        </div>
       </main>
     </div>
   );
