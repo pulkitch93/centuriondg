@@ -33,6 +33,9 @@ export default function Dashboard() {
               <p className="text-sm text-muted-foreground">Intelligent Earthwork Logistics</p>
             </div>
             <div className="flex gap-3">
+              <Link to="/materials">
+                <Button variant="outline">Materials Hub</Button>
+              </Link>
               <Link to="/scheduler">
                 <Button variant="outline">View Scheduler</Button>
               </Link>
