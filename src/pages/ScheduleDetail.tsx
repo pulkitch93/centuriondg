@@ -348,22 +348,31 @@ export default function ScheduleDetail() {
                 3-Day Weather Forecast
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {weatherConditions.map((day, index) => (
-                  <Card key={index} className="p-4 bg-muted/30">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {new Date(schedule.date).setDate(new Date(schedule.date).getDate() + index)}
-                    </p>
-                    <div className="flex items-center justify-between mb-3">
-                      <Cloud className="w-8 h-8 text-accent" />
-                      <p className="text-3xl font-bold text-foreground">{day.temp}°F</p>
-                    </div>
-                    <p className="text-sm font-semibold text-foreground mb-2">{day.condition}</p>
-                    <div className="space-y-1 text-xs text-muted-foreground">
-                      <p>Wind: {day.wind}</p>
-                      <p>Humidity: {day.humidity}</p>
-                    </div>
-                  </Card>
-                ))}
+                {weatherConditions.map((day, index) => {
+                  const forecastDate = new Date(schedule.date);
+                  forecastDate.setDate(forecastDate.getDate() + index);
+                  
+                  return (
+                    <Card key={index} className="p-4 bg-muted/30">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {forecastDate.toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </p>
+                      <div className="flex items-center justify-between mb-3">
+                        <Cloud className="w-8 h-8 text-accent" />
+                        <p className="text-3xl font-bold text-foreground">{day.temp}°F</p>
+                      </div>
+                      <p className="text-sm font-semibold text-foreground mb-2">{day.condition}</p>
+                      <div className="space-y-1 text-xs text-muted-foreground">
+                        <p>Wind: {day.wind}</p>
+                        <p>Humidity: {day.humidity}</p>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
 
               {schedule.weatherDelay && schedule.weatherDelay > 20 && (
