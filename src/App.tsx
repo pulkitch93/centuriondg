@@ -2,9 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FloatingChatbot } from "@/components/FloatingChatbot";
+import { Footer } from "@/components/Footer";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import Marketing from "./pages/Marketing";
 import Sites from "./pages/Sites";
 import NewSite from "./pages/NewSite";
 import Scheduler from "./pages/Scheduler";
@@ -29,27 +31,33 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/sites" element={<Sites />} />
-          <Route path="/sites/new" element={<NewSite />} />
-          <Route path="/scheduler" element={<Scheduler />} />
-          <Route path="/schedule/:id" element={<ScheduleDetail />} />
-          <Route path="/materials" element={<MaterialsHub />} />
-          <Route path="/materials/:id" element={<MaterialProfile />} />
-          <Route path="/haulers" element={<Haulers />} />
-          <Route path="/dispatches" element={<Dispatches />} />
-          <Route path="/driver-mobile/:ticketId" element={<DriverMobile />} />
-          <Route path="/live-tracking" element={<LiveTracking />} />
-          <Route path="/performance" element={<PerformanceDashboard />} />
-          <Route path="/operations" element={<OperationsCenter />} />
-          <Route path="/ai-assistant" element={<AIAssistant />} />
-          <Route path="/compliance" element={<ComplianceCenter />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="flex flex-col min-h-screen">
+          <div className="flex-1">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/marketing" element={<Marketing />} />
+              <Route path="/sites" element={<Sites />} />
+              <Route path="/sites/new" element={<NewSite />} />
+              <Route path="/scheduler" element={<Scheduler />} />
+              <Route path="/schedule/:id" element={<ScheduleDetail />} />
+              <Route path="/materials" element={<MaterialsHub />} />
+              <Route path="/materials/:id" element={<MaterialProfile />} />
+              <Route path="/haulers" element={<Haulers />} />
+              <Route path="/dispatches" element={<Dispatches />} />
+              <Route path="/driver-mobile/:ticketId" element={<DriverMobile />} />
+              <Route path="/live-tracking" element={<LiveTracking />} />
+              <Route path="/performance" element={<PerformanceDashboard />} />
+              <Route path="/operations" element={<OperationsCenter />} />
+              <Route path="/ai-assistant" element={<AIAssistant />} />
+              <Route path="/compliance" element={<ComplianceCenter />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
+          <Footer />
+        </div>
+        <FloatingChatbot />
       </BrowserRouter>
-      <FloatingChatbot />
     </TooltipProvider>
   </QueryClientProvider>
 );
