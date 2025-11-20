@@ -1,0 +1,479 @@
+import { Site, Match } from '@/types/site';
+import { Schedule, Hauler } from '@/types/scheduler';
+import { GeotechReport } from '@/types/geotechnical';
+import { storage } from './storage';
+import { schedulerStorage } from './schedulerStorage';
+import { geotechStorage } from './geotechnicalStorage';
+
+export function initializeSampleData() {
+  // Check if data already exists
+  const existingSites = storage.getSites();
+  if (existingSites.length > 0) {
+    return; // Don't overwrite existing data
+  }
+
+  // Sample Export Sites
+  const exportSites: Site[] = [
+    {
+      id: 'EX-101',
+      type: 'export',
+      name: 'South End Tower Excavation',
+      location: '800 South Blvd, Charlotte, NC 28203',
+      coordinates: { lat: 35.2141, lng: -80.8547 },
+      soilType: 'clay',
+      volume: 8500,
+      scheduleStart: '2025-02-12',
+      scheduleEnd: '2025-03-03',
+      contaminated: false,
+      priceExpectation: 4,
+      projectOwner: 'South End Development LLC',
+      status: 'pending',
+      createdAt: new Date('2025-02-01').toISOString(),
+    },
+    {
+      id: 'EX-102',
+      type: 'export',
+      name: 'University District Parking Deck',
+      location: '9000 University City Blvd, Charlotte, NC 28223',
+      coordinates: { lat: 35.3074, lng: -80.7307 },
+      soilType: 'sand',
+      volume: 3200,
+      scheduleStart: '2025-02-20',
+      scheduleEnd: '2025-03-10',
+      contaminated: true,
+      priceExpectation: 1,
+      projectOwner: 'UNCC Facilities',
+      status: 'pending',
+      createdAt: new Date('2025-02-03').toISOString(),
+    },
+    {
+      id: 'EX-103',
+      type: 'export',
+      name: 'Monroe Rd Retail Site',
+      location: '5200 Monroe Rd, Matthews, NC 28105',
+      coordinates: { lat: 35.1165, lng: -80.7234 },
+      soilType: 'loam',
+      volume: 6000,
+      scheduleStart: '2025-02-15',
+      scheduleEnd: '2025-02-28',
+      contaminated: false,
+      priceExpectation: 0,
+      projectOwner: 'Matthews Retail Partners',
+      status: 'pending',
+      createdAt: new Date('2025-02-02').toISOString(),
+    },
+  ];
+
+  // Sample Import Sites
+  const importSites: Site[] = [
+    {
+      id: 'IM-201',
+      type: 'import',
+      name: 'Ballantyne Business Park',
+      location: '14825 Ballantyne Corporate Pl, Charlotte, NC 28277',
+      coordinates: { lat: 35.0515, lng: -80.8484 },
+      soilType: 'clay',
+      volume: 4000,
+      scheduleStart: '2025-02-18',
+      scheduleEnd: '2025-03-05',
+      contaminated: false,
+      priceExpectation: 6,
+      projectOwner: 'Ballantyne Development Corp',
+      status: 'pending',
+      createdAt: new Date('2025-02-01').toISOString(),
+    },
+    {
+      id: 'IM-202',
+      type: 'import',
+      name: 'Rock Hill Solar Farm',
+      location: '1200 Dave Lyle Blvd, Rock Hill, SC 29730',
+      coordinates: { lat: 34.9249, lng: -81.0251 },
+      soilType: 'loam',
+      volume: 7500,
+      scheduleStart: '2025-02-10',
+      scheduleEnd: '2025-02-29',
+      contaminated: false,
+      priceExpectation: 3,
+      projectOwner: 'SC Solar Energy LLC',
+      status: 'pending',
+      createdAt: new Date('2025-02-01').toISOString(),
+    },
+    {
+      id: 'IM-203',
+      type: 'import',
+      name: 'Uptown Greenway Project',
+      location: '220 N Tryon St, Charlotte, NC 28202',
+      coordinates: { lat: 35.2271, lng: -80.8431 },
+      soilType: 'loam',
+      volume: 1800,
+      scheduleStart: '2025-02-22',
+      scheduleEnd: '2025-03-12',
+      contaminated: false,
+      priceExpectation: 2,
+      projectOwner: 'City of Charlotte Parks',
+      status: 'pending',
+      createdAt: new Date('2025-02-04').toISOString(),
+    },
+  ];
+
+  // Sample Matches
+  const matches: Match[] = [
+    {
+      id: 'match-103-202',
+      exportSiteId: 'EX-103',
+      importSiteId: 'IM-202',
+      score: 96,
+      distance: 17,
+      costSavings: 81600,
+      carbonReduction: 4080,
+      reasons: [
+        'Perfect match - clean fill and high volume fit',
+        'Excellent proximity for cost efficiency',
+        'Perfect soil type match: loam',
+        'Volume requirements align well',
+        'Clean fill - no contamination concerns',
+        'High overall compatibility score',
+      ],
+      status: 'approved',
+      createdAt: new Date('2025-02-05').toISOString(),
+    },
+    {
+      id: 'match-101-201',
+      exportSiteId: 'EX-101',
+      importSiteId: 'IM-201',
+      score: 91,
+      distance: 12,
+      costSavings: 38400,
+      carbonReduction: 1920,
+      reasons: [
+        'Clay acceptable for structural after compaction',
+        'Excellent proximity - minimal haul distance',
+        'Perfect soil type match: clay',
+        'Volume requirements align well',
+        'Clean fill - no contamination concerns',
+        'High overall compatibility score',
+      ],
+      status: 'approved',
+      createdAt: new Date('2025-02-05').toISOString(),
+    },
+    {
+      id: 'match-102-203',
+      exportSiteId: 'EX-102',
+      importSiteId: 'IM-203',
+      score: 65,
+      distance: 22,
+      costSavings: 31680,
+      carbonReduction: 1584,
+      reasons: [
+        'Contamination risk flagged - requires environmental review',
+        'Good proximity for cost efficiency',
+        'Moderate volume compatibility',
+      ],
+      status: 'suggested',
+      createdAt: new Date('2025-02-05').toISOString(),
+    },
+  ];
+
+  // Sample Haulers (additional to existing)
+  const additionalHaulers: Hauler[] = [
+    {
+      id: 'hauler-5',
+      name: 'Queen City Hauling',
+      reliabilityScore: 94,
+      trucksAvailable: 10,
+      costPerMile: 3.2,
+      status: 'active',
+    },
+    {
+      id: 'hauler-6',
+      name: 'Carolina Dirt Movers',
+      reliabilityScore: 89,
+      trucksAvailable: 7,
+      costPerMile: 3.6,
+      status: 'active',
+    },
+  ];
+
+  // Sample Schedules
+  const schedules: Schedule[] = [
+    {
+      id: 'DS-5001',
+      matchId: 'match-103-202',
+      haulerId: 'hauler-5',
+      date: '2025-02-18',
+      startTime: '07:00',
+      endTime: '15:00',
+      route: {
+        id: 'route-5001',
+        type: 'fastest',
+        distance: 17,
+        duration: 22.7,
+        cost: 54.4,
+        carbonEmissions: 13.6,
+        waypoints: [
+          { lat: 35.1165, lng: -80.7234 },
+          { lat: 34.9249, lng: -81.0251 },
+        ],
+      },
+      volumeScheduled: 3000,
+      trucksNeeded: 4,
+      status: 'scheduled',
+      alerts: [],
+      weatherDelay: 5,
+      trafficDelay: 2,
+      createdAt: new Date('2025-02-10').toISOString(),
+      isAiGenerated: true,
+    },
+    {
+      id: 'DS-5002',
+      matchId: 'match-101-201',
+      haulerId: 'hauler-6',
+      date: '2025-02-20',
+      startTime: '07:00',
+      endTime: '14:00',
+      route: {
+        id: 'route-5002',
+        type: 'cheapest',
+        distance: 12,
+        duration: 16,
+        cost: 43.2,
+        carbonEmissions: 9.6,
+        waypoints: [
+          { lat: 35.2141, lng: -80.8547 },
+          { lat: 35.0515, lng: -80.8484 },
+        ],
+      },
+      volumeScheduled: 2000,
+      trucksNeeded: 3,
+      status: 'scheduled',
+      alerts: [
+        {
+          id: 'alert-traffic',
+          type: 'traffic',
+          severity: 'medium',
+          message: 'AM traffic spike - expected 30 min delay',
+          timestamp: new Date('2025-02-10').toISOString(),
+        },
+      ],
+      weatherDelay: 62,
+      trafficDelay: 30,
+      createdAt: new Date('2025-02-10').toISOString(),
+      isAiGenerated: true,
+    },
+    {
+      id: 'DS-5003',
+      matchId: 'match-102-203',
+      haulerId: 'hauler-1',
+      date: '2025-02-22',
+      startTime: '08:00',
+      endTime: '15:00',
+      route: {
+        id: 'route-5003',
+        type: 'greenest',
+        distance: 22,
+        duration: 29.3,
+        cost: 77,
+        carbonEmissions: 12.32,
+        waypoints: [
+          { lat: 35.3074, lng: -80.7307 },
+          { lat: 35.2271, lng: -80.8431 },
+        ],
+      },
+      volumeScheduled: 1200,
+      trucksNeeded: 2,
+      status: 'scheduled',
+      alerts: [
+        {
+          id: 'alert-contamination',
+          type: 'conflict',
+          severity: 'high',
+          message: 'Soil flagged for treatment - requires disposal approval',
+          timestamp: new Date('2025-02-10').toISOString(),
+        },
+      ],
+      weatherDelay: 12,
+      trafficDelay: 5,
+      createdAt: new Date('2025-02-10').toISOString(),
+      isAiGenerated: true,
+    },
+  ];
+
+  // Sample Geotechnical Reports
+  const reports: GeotechReport[] = [
+    {
+      id: 'GT-001',
+      name: 'South End Tower - Clay Analysis',
+      siteId: 'EX-101',
+      uploadDate: new Date('2025-02-01').toISOString(),
+      fileType: 'pdf',
+      classification: 'structural-fill',
+      suitabilityScore: 84,
+      properties: {
+        moistureContent: 18,
+        compaction: 92,
+        density: 123,
+        pH: 7.1,
+        organicContent: 1.2,
+        grainSize: {
+          clay: 45,
+          silt: 35,
+          sand: 20,
+        },
+        contaminants: [],
+      },
+      aiExtracted: true,
+      reuseRecommendations: [
+        'Excellent for foundation support and load-bearing applications',
+        'Suitable for highway embankments and retaining wall backfill',
+        'Can be used for critical infrastructure projects',
+        'High compaction rate ideal for immediate structural use',
+      ],
+      riskFactors: [],
+      treatmentOptions: [],
+      location: 'South End, Charlotte, NC',
+      testDate: '2025-01-28',
+      laboratory: 'Terracon Consultants',
+      notes: 'CL Clay - No organic matter detected. Meets NCDOT specifications.',
+    },
+    {
+      id: 'GT-002',
+      name: 'University District - Sandy Loam Report',
+      siteId: 'EX-102',
+      uploadDate: new Date('2025-02-03').toISOString(),
+      fileType: 'pdf',
+      classification: 'general-fill',
+      suitabilityScore: 52,
+      properties: {
+        moistureContent: 12,
+        compaction: 86,
+        density: 115,
+        pH: 6.8,
+        organicContent: 2.5,
+        grainSize: {
+          sand: 55,
+          silt: 30,
+          clay: 15,
+        },
+        contaminants: ['Lead'],
+      },
+      aiExtracted: true,
+      reuseRecommendations: [
+        'Acceptable for non-structural fills and mass grading',
+        'May be suitable for landscaping after amendment',
+      ],
+      riskFactors: [
+        'Contains hazardous materials - handle with care',
+        'May require special handling and disposal permits',
+        'Low compaction - may not meet project specifications',
+      ],
+      treatmentOptions: [
+        'Professional remediation required',
+        'Consider soil washing or thermal treatment',
+        'Recompaction required with proper moisture control',
+      ],
+      location: 'University City, Charlotte, NC',
+      testDate: '2025-02-01',
+      laboratory: 'Environmental Testing Services',
+      notes: 'SM Sandy Loam - Low lead detected (35 ppm). Treated but requires disposal approval.',
+    },
+    {
+      id: 'GT-003',
+      name: 'Monroe Road - General Fill Assessment',
+      siteId: 'EX-103',
+      uploadDate: new Date('2025-02-02').toISOString(),
+      fileType: 'pdf',
+      classification: 'select-fill',
+      suitabilityScore: 63,
+      properties: {
+        moistureContent: 10,
+        compaction: 78,
+        density: 108,
+        pH: 7.3,
+        organicContent: 4.1,
+        grainSize: {
+          sand: 40,
+          silt: 35,
+          clay: 25,
+        },
+        contaminants: [],
+      },
+      aiExtracted: true,
+      reuseRecommendations: [
+        'Suitable for general backfill and grading projects',
+        'Good for utility trench backfill',
+        'Can be used for landscape grading and site preparation',
+        'Low moisture content ideal for immediate placement',
+      ],
+      riskFactors: [
+        'Low compaction - may not meet project specifications',
+        'Organic content may decompose and cause settlement',
+      ],
+      treatmentOptions: [
+        'Recompaction required with proper moisture control',
+        'Remove organic material or stabilize with additives',
+      ],
+      location: 'Matthews, NC',
+      testDate: '2025-01-30',
+      laboratory: 'Geotechnical Solutions Inc',
+      notes: 'General fill dirt - Clean material suitable for landscaping or general backfill.',
+    },
+    {
+      id: 'GT-004',
+      name: 'Rock Hill Test Pit - Sandy Clay',
+      uploadDate: new Date('2025-02-01').toISOString(),
+      fileType: 'pdf',
+      classification: 'select-fill',
+      suitabilityScore: 71,
+      properties: {
+        moistureContent: 22,
+        compaction: 88,
+        density: 118,
+        pH: 7.0,
+        organicContent: 1.8,
+        grainSize: {
+          sand: 50,
+          clay: 30,
+          silt: 20,
+        },
+        contaminants: [],
+      },
+      aiExtracted: true,
+      reuseRecommendations: [
+        'Suitable for general backfill and grading projects',
+        'Good for utility trench backfill',
+        'Can be used for landscape grading and site preparation',
+      ],
+      riskFactors: [
+        'High moisture content may require drying time',
+      ],
+      treatmentOptions: [
+        'Allow material to dry or use moisture conditioning',
+      ],
+      location: 'Rock Hill, SC',
+      testDate: '2025-01-25',
+      laboratory: 'Carolina Geotechnical',
+      notes: 'SC Sandy Clay - Suitable after drying. Good material for general use.',
+    },
+  ];
+
+  // Initialize data
+  storage.setSites([...exportSites, ...importSites]);
+  storage.setMatches(matches);
+  
+  const existingHaulers = schedulerStorage.getHaulers();
+  schedulerStorage.setHaulers([...existingHaulers, ...additionalHaulers]);
+  schedulerStorage.setSchedules(schedules);
+  
+  geotechStorage.setReports(reports);
+
+  // Update matched sites status
+  const allSites = [...exportSites, ...importSites];
+  const updatedSites = allSites.map(site => {
+    const hasMatch = matches.find(m => 
+      (m.exportSiteId === site.id || m.importSiteId === site.id) && 
+      m.status === 'approved'
+    );
+    return hasMatch ? { ...site, status: 'matched' as const } : site;
+  });
+  storage.setSites(updatedSites);
+}

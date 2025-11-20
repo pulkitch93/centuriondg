@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
+import { initializeSampleData } from '@/lib/initializeData';
 import { Site, Match } from '@/types/site';
 import { MapPin, TrendingUp, Sparkles, CheckCircle2 } from 'lucide-react';
 
@@ -11,6 +12,9 @@ export default function Dashboard() {
   const [matches, setMatches] = useState<Match[]>([]);
 
   useEffect(() => {
+    // Initialize sample data on first load
+    initializeSampleData();
+    
     setSites(storage.getSites());
     setMatches(storage.getMatches());
   }, []);
