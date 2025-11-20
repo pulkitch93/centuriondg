@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
+import { schedulerStorage } from '@/lib/schedulerStorage';
+import { dispatchStorage } from '@/lib/dispatchStorage';
+import { operationsStorage } from '@/lib/operationsStorage';
 import { initializeSampleData } from '@/lib/initializeData';
 import { Site, Match } from '@/types/site';
 import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck } from 'lucide-react';
@@ -10,6 +13,7 @@ import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck } from 'lucide
 export default function Dashboard() {
   const [sites, setSites] = useState<Site[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
+  const jobs = operationsStorage.getJobs();
 
   useEffect(() => {
     // Initialize sample data on first load
@@ -54,6 +58,9 @@ export default function Dashboard() {
               </Link>
               <Link to="/scheduler">
                 <Button variant="outline">Scheduler</Button>
+              </Link>
+              <Link to="/ai-assistant">
+                <Button variant="outline">AI Assistant</Button>
               </Link>
               <Link to="/sites">
                 <Button variant="outline">Job Board</Button>
