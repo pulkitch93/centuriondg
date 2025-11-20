@@ -17,6 +17,7 @@ import LiveTracking from "./pages/LiveTracking";
 import PerformanceDashboard from "./pages/PerformanceDashboard";
 import NotFound from "./pages/NotFound";
 import OperationsCenter from "./pages/OperationsCenter";
+import AIAssistant from "./pages/AIAssistant";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/live-tracking" element={<LiveTracking />} />
           <Route path="/performance" element={<PerformanceDashboard />} />
           <Route path="/operations" element={<OperationsCenter />} />
+          <Route path="/ai-assistant" element={<AIAssistant />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
