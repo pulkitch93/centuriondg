@@ -18,6 +18,7 @@ import PerformanceDashboard from "./pages/PerformanceDashboard";
 import NotFound from "./pages/NotFound";
 import OperationsCenter from "./pages/OperationsCenter";
 import AIAssistant from "./pages/AIAssistant";
+import ComplianceCenter from "./pages/ComplianceCenter";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/performance" element={<PerformanceDashboard />} />
           <Route path="/operations" element={<OperationsCenter />} />
           <Route path="/ai-assistant" element={<AIAssistant />} />
+          <Route path="/compliance" element={<ComplianceCenter />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
