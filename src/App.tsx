@@ -13,6 +13,7 @@ import MaterialProfile from "./pages/MaterialProfile";
 import Haulers from "./pages/Haulers";
 import Dispatches from "./pages/Dispatches";
 import DriverMobile from "./pages/DriverMobile";
+import LiveTracking from "./pages/LiveTracking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/haulers" element={<Haulers />} />
           <Route path="/dispatches" element={<Dispatches />} />
           <Route path="/driver-mobile/:ticketId" element={<DriverMobile />} />
+          <Route path="/live-tracking" element={<LiveTracking />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
