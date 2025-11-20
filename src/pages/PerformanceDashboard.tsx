@@ -82,11 +82,6 @@ export default function PerformanceDashboard() {
         <PageHeader
           title="Executive Intelligence Dashboard"
           description="Comprehensive business analytics and forecasting"
-          actions={
-            <Button variant="outline" onClick={() => navigate('/dashboard')}>
-              Back to Dashboard
-            </Button>
-          }
         />
 
         {/* Executive KPIs */}
