@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { AIBadge } from '@/components/ui/ai-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -25,7 +26,11 @@ import {
   FileCheck,
   XCircle,
   Search,
-  Filter
+  Filter,
+  Sparkles,
+  Brain,
+  Target,
+  Zap
 } from 'lucide-react';
 import { complianceStorage } from '@/lib/complianceStorage';
 import { initializeComplianceData } from '@/lib/initComplianceData';
@@ -348,6 +353,131 @@ const ComplianceCenter = () => {
             <p className="text-xs text-muted-foreground mt-1">
               Immediate attention
             </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* AI Prescriptive Compliance Intelligence */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <Card className="shadow-elevated relative overflow-hidden bg-gradient-to-br from-accent/5 to-primary/5 border-2 border-accent/30">
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-accent animate-pulse" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Proactive Risk Detection</CardTitle>
+                  <CardDescription>AI-powered compliance forecasting</CardDescription>
+                </div>
+              </div>
+              <AIBadge size="md" variant="pill" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="bg-card/50 rounded-lg p-3 border border-border">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="w-4 h-4 text-status-pending" />
+                <span className="text-sm font-medium text-foreground">Expiration Alert</span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                3 permits expiring in next 30 days. Auto-renewal initiated for ENV-2024-047 and TRANS-2024-112.
+              </p>
+              <Badge className="bg-status-pending/20 text-status-pending text-xs">Action Required: 1</Badge>
+            </div>
+            <div className="bg-card/50 rounded-lg p-3 border border-border">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-accent" />
+                <span className="text-sm font-medium text-foreground">Compliance Gap Analysis</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Missing: Hauler H-05 insurance update. Predicted approval: 89% if submitted by Friday.
+              </p>
+            </div>
+            <Button size="sm" variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+              View Full Risk Report
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-elevated relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/30">
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                  <Target className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Auto-Verification</CardTitle>
+                  <CardDescription>Intelligent document validation</CardDescription>
+                </div>
+              </div>
+              <AIBadge size="md" variant="pill" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">OCR Accuracy</span>
+                <span className="font-bold text-secondary">96.8%</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Auto-Approved</span>
+                <span className="font-bold text-status-approved">12 docs</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Flagged for Review</span>
+                <span className="font-bold text-status-pending">2 docs</span>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-border">
+              <div className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-status-approved mt-0.5" />
+                <p className="text-xs text-muted-foreground">
+                  AI validated ENV-2024-089 against 14 regulatory requirements. No issues detected.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-elevated relative overflow-hidden bg-gradient-to-br from-secondary/5 to-accent/5 border-2 border-secondary/30">
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-accent/20 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-secondary" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Smart Actions</CardTitle>
+                  <CardDescription>Automated compliance tasks</CardDescription>
+                </div>
+              </div>
+              <AIBadge size="md" variant="pill" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-status-approved mt-0.5" />
+              <p className="text-sm text-foreground">
+                Schedule renewal for SOIL-MAN-2024-034 (expires in 45 days)
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle className="w-4 h-4 text-status-approved mt-0.5" />
+              <p className="text-sm text-foreground">
+                Request hauler insurance update from H-05 and H-12
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-status-pending mt-0.5" />
+              <p className="text-sm text-foreground">
+                Cross-verify soil test results with geotechnical specs
+              </p>
+            </div>
+            <div className="pt-2 border-t border-border text-xs text-muted-foreground">
+              AI processing 247 compliance rules across 8 jurisdictions
+            </div>
           </CardContent>
         </Card>
       </div>
