@@ -8,7 +8,7 @@ import { dispatchStorage } from '@/lib/dispatchStorage';
 import { operationsStorage } from '@/lib/operationsStorage';
 import { initializeSampleData } from '@/lib/initializeData';
 import { Site, Match } from '@/types/site';
-import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck } from 'lucide-react';
+import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck, Shield } from 'lucide-react';
 
 export default function Dashboard() {
   const [sites, setSites] = useState<Site[]>([]);
@@ -61,6 +61,9 @@ export default function Dashboard() {
               </Link>
               <Link to="/ai-assistant">
                 <Button variant="outline">AI Assistant</Button>
+              </Link>
+              <Link to="/compliance">
+                <Button variant="outline">Compliance</Button>
               </Link>
               <Link to="/sites">
                 <Button variant="outline">Job Board</Button>
