@@ -10,8 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigation, Clock, MapPin, Truck, AlertCircle } from 'lucide-react';
 import { dispatchStorage } from '@/lib/dispatchStorage';
 import { storage } from '@/lib/storage';
+import { schedulerStorage } from '@/lib/schedulerStorage';
+import { generateRoutes } from '@/lib/scheduler';
 import { DispatchTicket, Driver } from '@/types/dispatch';
 import { Site } from '@/types/site';
+import { RouteType, Schedule } from '@/types/scheduler';
 
 export default function LiveTracking() {
   const navigate = useNavigate();
@@ -26,6 +29,9 @@ export default function LiveTracking() {
     localStorage.getItem('mapbox_token') || ''
   );
   const [showTokenInput, setShowTokenInput] = useState(!localStorage.getItem('mapbox_token'));
+  const [selectedRouteType, setSelectedRouteType] = useState<RouteType>('fastest');
+  const [showRoutes, setShowRoutes] = useState(true);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   useEffect(() => {
     loadData();
@@ -39,6 +45,7 @@ export default function LiveTracking() {
     setTickets(activeTickets);
     setDrivers(dispatchStorage.getDrivers());
     setSites(storage.getSites());
+    setSchedules(schedulerStorage.getSchedules());
   };
 
   useEffect(() => {
@@ -54,6 +61,11 @@ export default function LiveTracking() {
     });
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    map.current.on('load', () => {
+      // Add route layers after map loads
+      addRouteLayers();
+    });
 
     // Initialize markers for active trucks
     tickets.forEach(ticket => {
@@ -124,7 +136,173 @@ export default function LiveTracking() {
       map.current?.remove();
       markers.current.clear();
     };
-  }, [tickets, drivers, sites]);
+  }, [tickets, drivers, sites, mapboxToken]);
+
+  // Add route visualization layers
+  const addRouteLayers = () => {
+    if (!map.current) return;
+
+    tickets.forEach((ticket, index) => {
+      const exportSite = sites.find(s => s.id === ticket.exportSiteId);
+      const importSite = sites.find(s => s.id === ticket.importSiteId);
+
+      if (!exportSite || !importSite) return;
+
+      // Calculate distance
+      const distance = Math.sqrt(
+        Math.pow(importSite.coordinates.lat - exportSite.coordinates.lat, 2) +
+        Math.pow(importSite.coordinates.lng - exportSite.coordinates.lng, 2)
+      ) * 69; // Rough conversion to miles
+
+      // Generate all route types
+      const routes = generateRoutes(exportSite, importSite, distance);
+      
+      // Get the selected route
+      const selectedRoute = routes[selectedRouteType];
+
+      // Create curved route path
+      const start = [exportSite.coordinates.lng, exportSite.coordinates.lat];
+      const end = [importSite.coordinates.lng, importSite.coordinates.lat];
+      
+      // Calculate control point for bezier curve
+      const midLat = (exportSite.coordinates.lat + importSite.coordinates.lat) / 2;
+      const midLng = (exportSite.coordinates.lng + importSite.coordinates.lng) / 2;
+      const offsetLat = (importSite.coordinates.lng - exportSite.coordinates.lng) * 0.15;
+      const offsetLng = -(importSite.coordinates.lat - exportSite.coordinates.lat) * 0.15;
+      
+      const control = [midLng + offsetLng, midLat + offsetLat];
+
+      // Generate smooth curve points
+      const curvePoints = [];
+      for (let t = 0; t <= 1; t += 0.05) {
+        const lng = Math.pow(1 - t, 2) * start[0] + 
+                    2 * (1 - t) * t * control[0] + 
+                    Math.pow(t, 2) * end[0];
+        const lat = Math.pow(1 - t, 2) * start[1] + 
+                    2 * (1 - t) * t * control[1] + 
+                    Math.pow(t, 2) * end[1];
+        curvePoints.push([lng, lat]);
+      }
+
+      const sourceId = `route-${ticket.id}`;
+      const layerId = `route-layer-${ticket.id}`;
+      const arrowLayerId = `route-arrow-${ticket.id}`;
+
+      // Route color based on type
+      const routeColors = {
+        fastest: '#3b82f6', // blue
+        cheapest: '#22c55e', // green
+        greenest: '#10b981', // emerald
+      };
+
+      // Add route source
+      if (!map.current!.getSource(sourceId)) {
+        map.current!.addSource(sourceId, {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {
+              routeType: selectedRouteType,
+              distance: selectedRoute.distance,
+              duration: selectedRoute.duration,
+              cost: selectedRoute.cost,
+            },
+            geometry: {
+              type: 'LineString',
+              coordinates: curvePoints,
+            },
+          },
+        });
+
+        // Add route line layer
+        map.current!.addLayer({
+          id: layerId,
+          type: 'line',
+          source: sourceId,
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+          paint: {
+            'line-color': routeColors[selectedRouteType],
+            'line-width': 4,
+            'line-opacity': 0.8,
+          },
+        });
+
+        // Add animated dashed line for direction
+        map.current!.addLayer({
+          id: arrowLayerId,
+          type: 'line',
+          source: sourceId,
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+          paint: {
+            'line-color': '#ffffff',
+            'line-width': 2,
+            'line-dasharray': [0, 2, 2],
+            'line-opacity': 0.6,
+          },
+        });
+
+        // Add click handler to show route info
+        map.current!.on('click', layerId, () => {
+          new mapboxgl.Popup()
+            .setLngLat(control as [number, number])
+            .setHTML(`
+              <div class="p-3">
+                <h3 class="font-semibold text-sm mb-2">${selectedRouteType.charAt(0).toUpperCase() + selectedRouteType.slice(1)} Route</h3>
+                <div class="space-y-1 text-xs">
+                  <p><span class="font-medium">Distance:</span> ${selectedRoute.distance.toFixed(1)} mi</p>
+                  <p><span class="font-medium">Duration:</span> ${Math.round(selectedRoute.duration)} min</p>
+                  <p><span class="font-medium">Cost:</span> $${selectedRoute.cost.toFixed(2)}</p>
+                  <p><span class="font-medium">CO₂:</span> ${selectedRoute.carbonEmissions.toFixed(1)} kg</p>
+                </div>
+              </div>
+            `)
+            .addTo(map.current!);
+        });
+
+        // Change cursor on hover
+        map.current!.on('mouseenter', layerId, () => {
+          map.current!.getCanvas().style.cursor = 'pointer';
+        });
+
+        map.current!.on('mouseleave', layerId, () => {
+          map.current!.getCanvas().style.cursor = '';
+        });
+      }
+    });
+  };
+
+  // Update routes when route type changes
+  useEffect(() => {
+    if (!map.current || !map.current.isStyleLoaded()) return;
+
+    // Remove existing route layers
+    tickets.forEach(ticket => {
+      const layerId = `route-layer-${ticket.id}`;
+      const arrowLayerId = `route-arrow-${ticket.id}`;
+      const sourceId = `route-${ticket.id}`;
+
+      if (map.current!.getLayer(layerId)) {
+        map.current!.removeLayer(layerId);
+      }
+      if (map.current!.getLayer(arrowLayerId)) {
+        map.current!.removeLayer(arrowLayerId);
+      }
+      if (map.current!.getSource(sourceId)) {
+        map.current!.removeSource(sourceId);
+      }
+    });
+
+    // Re-add with new route type
+    if (showRoutes) {
+      addRouteLayers();
+    }
+  }, [selectedRouteType, showRoutes, tickets, sites]);
 
   // Simulate GPS updates
   useEffect(() => {
@@ -294,8 +472,74 @@ export default function LiveTracking() {
           <div className="flex-1 relative">
             <div ref={mapContainer} className="absolute inset-0" />
             
+            {/* Route Controls */}
+            <Card className="absolute top-4 left-4 w-64">
+              <CardHeader className="p-3">
+                <CardTitle className="text-sm">Route Optimization</CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 pt-0 space-y-3">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium">Route Type</label>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant={selectedRouteType === 'fastest' ? 'default' : 'outline'}
+                      onClick={() => setSelectedRouteType('fastest')}
+                      className="flex-1 h-8 text-xs"
+                    >
+                      Fastest
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={selectedRouteType === 'cheapest' ? 'default' : 'outline'}
+                      onClick={() => setSelectedRouteType('cheapest')}
+                      className="flex-1 h-8 text-xs"
+                    >
+                      Cheapest
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={selectedRouteType === 'greenest' ? 'default' : 'outline'}
+                      onClick={() => setSelectedRouteType('greenest')}
+                      className="flex-1 h-8 text-xs"
+                    >
+                      Greenest
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium">Show Routes</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showRoutes}
+                      onChange={(e) => setShowRoutes(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+
+                <div className="pt-2 border-t space-y-1.5 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-0.5" style={{ backgroundColor: '#3b82f6' }} />
+                    <span>Fastest Route</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-0.5" style={{ backgroundColor: '#22c55e' }} />
+                    <span>Cheapest Route</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-0.5" style={{ backgroundColor: '#10b981' }} />
+                    <span>Greenest Route</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Legend */}
-            <Card className="absolute top-4 left-4 w-48">
+            <Card className="absolute bottom-4 left-4 w-48">
               <CardHeader className="p-3">
                 <CardTitle className="text-sm">Map Legend</CardTitle>
               </CardHeader>
