@@ -36,6 +36,7 @@ import { complianceStorage } from '@/lib/complianceStorage';
 import { initializeComplianceData } from '@/lib/initComplianceData';
 import { simulateOCR, extractTextFromFile } from '@/lib/ocrSimulator';
 import { ComplianceDocument, ComplianceAlert, ComplianceSummary, DocumentType } from '@/types/compliance';
+import { ComplianceRiskDialog } from '@/components/ComplianceRiskDialog';
 import { toast } from '@/hooks/use-toast';
 
 const ComplianceCenter = () => {
@@ -47,6 +48,7 @@ const ComplianceCenter = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showRiskReport, setShowRiskReport] = useState(false);
 
   useEffect(() => {
     initializeComplianceData();
@@ -394,7 +396,12 @@ const ComplianceCenter = () => {
                 Missing: Hauler H-05 insurance update. Predicted approval: 89% if submitted by Friday.
               </p>
             </div>
-            <Button size="sm" variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+              onClick={() => setShowRiskReport(true)}
+            >
               View Full Risk Report
             </Button>
           </CardContent>
@@ -768,6 +775,11 @@ const ComplianceCenter = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ComplianceRiskDialog
+        open={showRiskReport}
+        onOpenChange={setShowRiskReport}
+      />
     </div>
   );
 };
