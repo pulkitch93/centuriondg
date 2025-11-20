@@ -233,24 +233,17 @@ export default function OperationsCenter() {
       <div className="h-screen flex flex-col">
         {/* Header */}
         <div className="bg-card border-b p-4">
-          <div className="flex items-center justify-between max-w-[2000px] mx-auto">
-            <div className="flex items-center gap-3">
-              <Radio className="h-8 w-8 text-primary animate-pulse" />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Operations Control Center</h1>
-                <p className="text-sm text-muted-foreground">Real-time command & monitoring</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setMessageDialog(true)}>
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Message Haulers
-              </Button>
-              <Button variant="ghost" onClick={() => navigate("/")}>
-                <MapPin className="mr-2 h-4 w-4" />
-                Dashboard
-              </Button>
-            </div>
+          <div className="max-w-[2000px] mx-auto">
+            <PageHeader
+              title="Operations Control Center"
+              description="Real-time command & monitoring"
+              actions={
+                <Button variant="outline" onClick={() => setMessageDialog(true)}>
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Message Haulers
+                </Button>
+              }
+            />
           </div>
         </div>
 
