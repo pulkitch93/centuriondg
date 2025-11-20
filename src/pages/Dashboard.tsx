@@ -59,9 +59,6 @@ export default function Dashboard() {
               <Link to="/scheduler">
                 <Button variant="outline">Scheduler</Button>
               </Link>
-              <Link to="/ai-assistant">
-                <Button variant="outline">AI Assistant</Button>
-              </Link>
               <Link to="/compliance">
                 <Button variant="outline">Compliance</Button>
               </Link>
