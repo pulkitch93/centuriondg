@@ -1,9 +1,11 @@
 import { Site, Match } from '@/types/site';
 import { Schedule, Hauler } from '@/types/scheduler';
 import { GeotechReport } from '@/types/geotechnical';
+import { Driver, DispatchTicket } from '@/types/dispatch';
 import { storage } from './storage';
 import { schedulerStorage } from './schedulerStorage';
 import { geotechStorage } from './geotechnicalStorage';
+import { dispatchStorage } from './dispatchStorage';
 
 export function initializeSampleData() {
   // Check if data already exists
@@ -297,6 +299,105 @@ export function initializeSampleData() {
       isAiGenerated: true,
     },
   ];
+
+  schedulerStorage.setSchedules(schedules);
+
+  // Initialize drivers if none exist
+  if (dispatchStorage.getDrivers().length === 0) {
+    const drivers: Driver[] = [
+      {
+        id: 'driver-1',
+        name: 'Marcus Hill',
+        haulerId: 'hauler-1',
+        truckType: 'tri-axle',
+        truckCapacity: 18,
+        licensePlate: 'NC-8472',
+        certifications: ['Clean fill certified', 'DOT certified'],
+        performanceScore: 96,
+        phone: '(704) 555-0101',
+        status: 'available',
+      },
+      {
+        id: 'driver-2',
+        name: 'Sofia Reyes',
+        haulerId: 'hauler-2',
+        truckType: 'quad-axle',
+        truckCapacity: 20,
+        licensePlate: 'NC-9203',
+        certifications: ['Hazmat', 'DOT certified', 'Heavy haul'],
+        performanceScore: 89,
+        phone: '(704) 555-0102',
+        status: 'on-job',
+      },
+      {
+        id: 'driver-3',
+        name: 'Jordan Lee',
+        haulerId: 'hauler-3',
+        truckType: 'dump-truck',
+        truckCapacity: 15,
+        licensePlate: 'NC-5619',
+        certifications: ['DOT certified'],
+        performanceScore: 73,
+        phone: '(704) 555-0103',
+        status: 'available',
+      },
+    ];
+    dispatchStorage.setDrivers(drivers);
+  }
+
+  // Initialize dispatch tickets if none exist
+  if (dispatchStorage.getDispatchTickets().length === 0) {
+    const now = new Date();
+    const tickets: DispatchTicket[] = [
+      {
+        id: 'T-9001',
+        scheduleId: 'DS-5001',
+        driverId: 'driver-1',
+        haulerCompany: 'Rapid Logistics',
+        exportSiteId: 'EX-103',
+        importSiteId: 'IM-202',
+        volume: 18,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        digitalSignature: 'signature-9001',
+        actualVolume: 18,
+        gpsTrack: [],
+        eta: '10:45 AM',
+        issues: [],
+      },
+      {
+        id: 'T-9002',
+        driverId: 'driver-2',
+        haulerCompany: 'GreenHaul Transport',
+        exportSiteId: 'EX-101',
+        importSiteId: 'IM-201',
+        volume: 20,
+        status: 'en-route-delivery',
+        createdAt: new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        gpsTrack: [],
+        eta: '3:10 PM',
+        issues: [],
+      },
+      {
+        id: 'T-9003',
+        driverId: 'driver-3',
+        haulerCompany: 'Budget Movers',
+        exportSiteId: 'EX-102',
+        importSiteId: 'IM-203',
+        volume: 15,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        gpsTrack: [],
+        issues: [],
+      },
+    ];
+    dispatchStorage.setDispatchTickets(tickets);
+  }
 
   // Sample Geotechnical Reports
   const reports: GeotechReport[] = [

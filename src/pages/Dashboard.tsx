@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { storage } from '@/lib/storage';
 import { initializeSampleData } from '@/lib/initializeData';
 import { Site, Match } from '@/types/site';
-import { MapPin, TrendingUp, Sparkles, CheckCircle2 } from 'lucide-react';
+import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck } from 'lucide-react';
 
 export default function Dashboard() {
   const [sites, setSites] = useState<Site[]>([]);
@@ -39,6 +39,12 @@ export default function Dashboard() {
             <div className="flex gap-3">
               <Link to="/materials">
                 <Button variant="outline">Materials Hub</Button>
+              </Link>
+              <Link to="/haulers">
+                <Button variant="outline">Hauler Network</Button>
+              </Link>
+              <Link to="/dispatches">
+                <Button variant="outline">Dispatches</Button>
               </Link>
               <Link to="/scheduler">
                 <Button variant="outline">View Scheduler</Button>
