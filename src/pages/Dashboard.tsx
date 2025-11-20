@@ -36,10 +36,12 @@ export default function Dashboard() {
       <header className="border-b bg-card shadow-subtle">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Centurion DG Platform</h1>
-              <p className="text-sm text-muted-foreground">Intelligent Earthwork Logistics</p>
-            </div>
+            <Link to="/marketing" className="hover:opacity-80 transition-opacity">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Centurion DG Platform</h1>
+                <p className="text-sm text-muted-foreground">Intelligent Earthwork Logistics</p>
+              </div>
+            </Link>
             <div className="flex gap-3">
               <Link to="/operations">
                 <Button variant="default" className="bg-primary">Operations Center</Button>
