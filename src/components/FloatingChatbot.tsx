@@ -176,24 +176,34 @@ export const FloatingChatbot = () => {
 
   if (!isOpen) {
     return (
-      <Button
-        onClick={() => setIsOpen(true)}
-        size="lg"
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </Button>
+      <div className="fixed bottom-6 right-6 z-50">
+        <div className="relative">
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full animate-pulse" />
+          <Button
+            onClick={() => setIsOpen(true)}
+            size="lg"
+            className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-br from-primary to-accent hover:from-primary/90 hover:to-accent/90 border-2 border-primary/20 relative group"
+          >
+            <Sparkles className="h-7 w-7 animate-pulse-subtle" />
+            <span className="absolute -top-8 right-0 text-xs font-medium bg-accent text-accent-foreground px-2 py-1 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+              AI Assistant
+            </span>
+          </Button>
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="fixed bottom-6 right-6 w-96 z-50">
-      <Card className="border-border/50 shadow-xl">
-        <div className="p-4 border-b border-border/50 bg-primary text-primary-foreground">
-          <div className="flex items-center justify-between">
+      <Card className="border-border/50 shadow-2xl bg-gradient-to-br from-card to-card/80">
+        <div className="p-4 border-b border-border/50 bg-gradient-to-r from-primary to-accent text-primary-foreground relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+          <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
+              <Sparkles className="h-5 w-5 animate-pulse" />
               <span className="font-semibold">AI Assistant</span>
+              <span className="text-xs bg-primary-foreground/20 px-2 py-0.5 rounded-full">LIVE</span>
             </div>
             <Button
               variant="ghost"
