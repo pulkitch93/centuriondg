@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Truck, Users, TrendingUp, Award, Phone, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { schedulerStorage } from '@/lib/schedulerStorage';
 import { dispatchStorage } from '@/lib/dispatchStorage';
 import { Hauler } from '@/types/scheduler';
 import { Driver } from '@/types/dispatch';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Haulers() {
   const navigate = useNavigate();
@@ -38,15 +38,10 @@ export default function Haulers() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">Hauler Network</h1>
-            <p className="text-muted-foreground mt-2">Manage trucking partners and drivers</p>
-          </div>
-          <Button onClick={() => navigate('/dashboard')}>
-            Back to Dashboard
-          </Button>
-        </div>
+        <PageHeader 
+          title="Hauler Network" 
+          description="Manage trucking partners and drivers"
+        />
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

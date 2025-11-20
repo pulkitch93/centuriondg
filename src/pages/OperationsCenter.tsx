@@ -24,6 +24,7 @@ import { Driver } from '@/types/dispatch';
 import { Site } from '@/types/site';
 import { Hauler } from '@/types/scheduler';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function OperationsCenter() {
   const navigate = useNavigate();
@@ -241,63 +242,66 @@ export default function OperationsCenter() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Dialog open={messageDialog} onOpenChange={setMessageDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Message Haulers
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Send Message to Hauler</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium">Hauler</label>
-                      <Select value={selectedHauler} onValueChange={setSelectedHauler}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select hauler" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {haulers.map(h => (
-                            <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Priority</label>
-                      <Select value={messagePriority} onValueChange={(v: 'normal' | 'urgent') => setMessagePriority(v)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Message</label>
-                      <Textarea
-                        value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
-                        placeholder="Type your message..."
-                        rows={4}
-                      />
-                    </div>
-                    <Button onClick={handleSendMessage} className="w-full">
-                      <Send className="mr-2 h-4 w-4" />
-                      Send Message
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
+              <Button variant="outline" onClick={() => setMessageDialog(true)}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Message Haulers
+              </Button>
+              <Button variant="ghost" onClick={() => navigate("/")}>
+                <MapPin className="mr-2 h-4 w-4" />
+                Dashboard
+              </Button>
             </div>
           </div>
         </div>
+
+        {/* Message Dialog */}
+        <Dialog open={messageDialog} onOpenChange={setMessageDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Send Message to Hauler</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Hauler</label>
+                <Select value={selectedHauler} onValueChange={setSelectedHauler}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select hauler" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {haulers.map(h => (
+                      <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Priority</label>
+                <Select value={messagePriority} onValueChange={(v: 'normal' | 'urgent') => setMessagePriority(v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Message</label>
+                <Textarea
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  placeholder="Type your message..."
+                  rows={4}
+                />
+              </div>
+              <Button onClick={handleSendMessage} className="w-full">
+                <Send className="mr-2 h-4 w-4" />
+                Send Message
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">

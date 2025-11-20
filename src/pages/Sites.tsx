@@ -8,9 +8,10 @@ import { generateMatches } from '@/lib/matching';
 import { Site, Match } from '@/types/site';
 import { GeotechReport } from '@/types/geotechnical';
 import { geotechStorage } from '@/lib/geotechnicalStorage';
-import { Plus, ArrowLeft, Sparkles, MapPin, Calendar, Package } from 'lucide-react';
+import { Plus, Sparkles, MapPin, Calendar, Package } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MaterialsMap from '@/components/MaterialsMap';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Sites() {
   const [sites, setSites] = useState<Site[]>([]);
@@ -105,32 +106,24 @@ export default function Sites() {
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-card shadow-subtle">
         <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Dashboard
+          <PageHeader 
+            title="Job Board" 
+            description="Manage export & import sites"
+            actions={
+              <>
+                <Button onClick={runAIMatching} variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Run AI Matching
                 </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Job Board</h1>
-                <p className="text-sm text-muted-foreground">Manage export & import sites</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button onClick={runAIMatching} variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Run AI Matching
-              </Button>
-              <Link to="/sites/new">
-                <Button className="bg-primary hover:bg-primary-dark">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Site
-                </Button>
-              </Link>
-            </div>
-          </div>
+                <Link to="/sites/new">
+                  <Button className="bg-primary hover:bg-primary-dark">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Site
+                  </Button>
+                </Link>
+              </>
+            }
+          />
         </div>
       </header>
 

@@ -18,6 +18,7 @@ import { initializeDispatchData } from '@/lib/initDispatchData';
 import { DispatchTicket, Driver } from '@/types/dispatch';
 import { Hauler, Schedule } from '@/types/scheduler';
 import { Site } from '@/types/site';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Dispatches() {
   const navigate = useNavigate();
@@ -131,98 +132,90 @@ export default function Dispatches() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">Dispatch Management</h1>
-            <p className="text-muted-foreground mt-2">Manage haul dispatches and tracking</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/performance')}>
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Performance
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/live-tracking')}>
-              <MapPin className="mr-2 h-4 w-4" />
-              Live GPS Tracking
-            </Button>
-            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Dispatch
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Create New Dispatch</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label>Schedule</Label>
-                    <Select value={selectedSchedule} onValueChange={setSelectedSchedule}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select schedule" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {schedules.map(schedule => (
-                          <SelectItem key={schedule.id} value={schedule.id}>
-                            {schedule.id} - {schedule.date}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+        <PageHeader 
+          title="Dispatch Management" 
+          description="Track and manage hauling operations"
+          actions={
+            <>
+              <Button variant="outline" onClick={() => navigate('/performance')}>
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Performance
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/live-tracking')}>
+                <MapPin className="mr-2 h-4 w-4" />
+                Live GPS Tracking
+              </Button>
+              <Button onClick={() => setIsCreateOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Dispatch
+              </Button>
+            </>
+          }
+        />
 
-                  <div>
-                    <Label>Driver</Label>
-                    <Select value={selectedDriver} onValueChange={setSelectedDriver}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select driver" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {drivers.filter(d => d.status === 'available').map(driver => {
-                          const hauler = haulers.find(h => h.id === driver.haulerId);
-                          return (
-                            <SelectItem key={driver.id} value={driver.id}>
-                              {driver.name} - {hauler?.name} ({driver.truckType})
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Volume (CY)</Label>
-                    <Input 
-                      type="number" 
-                      value={volume}
-                      onChange={(e) => setVolume(e.target.value)}
-                      placeholder="Enter volume"
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Notes (Optional)</Label>
-                    <Textarea 
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Special instructions..."
-                    />
-                  </div>
-
-                  <Button onClick={handleCreateDispatch} className="w-full">
-                    Create Dispatch
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Button variant="outline" onClick={() => navigate('/dashboard')}>
-              Back to Dashboard
-            </Button>
-          </div>
-        </div>
+        {/* Create Dialog */}
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create New Dispatch</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Schedule</Label>
+                <Select value={selectedSchedule} onValueChange={setSelectedSchedule}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select schedule" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {schedules.map(schedule => (
+                      <SelectItem key={schedule.id} value={schedule.id}>
+                        {schedule.id} - {schedule.date}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Driver</Label>
+                <Select value={selectedDriver} onValueChange={setSelectedDriver}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select driver" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {drivers.filter(d => d.status === 'available').map(driver => {
+                      const hauler = haulers.find(h => h.id === driver.haulerId);
+                      return (
+                        <SelectItem key={driver.id} value={driver.id}>
+                          {driver.name} - {hauler?.name}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Volume (CY)</Label>
+                <Input 
+                  type="number" 
+                  value={volume}
+                  onChange={(e) => setVolume(e.target.value)}
+                  placeholder="Enter volume"
+                />
+              </div>
+              <div>
+                <Label>Notes (Optional)</Label>
+                <Textarea 
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Special instructions..."
+                />
+              </div>
+              <Button onClick={handleCreateDispatch} className="w-full">
+                Create Dispatch
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

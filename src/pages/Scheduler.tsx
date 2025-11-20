@@ -13,6 +13,7 @@ import { Site, Match } from '@/types/site';
 import { ArrowLeft, Calendar, Sparkles, TrendingUp, Truck, AlertTriangle, Download, GripVertical, Eye } from 'lucide-react';
 import WhatIfSimulator from '@/components/WhatIfSimulator';
 import { useToast } from '@/hooks/use-toast';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Scheduler() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -174,36 +175,28 @@ export default function Scheduler() {
     <div className="min-h-screen bg-muted/30">
       <header className="border-b bg-card shadow-subtle">
         <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Dashboard
+          <PageHeader 
+            title="Logistics Scheduler" 
+            description="AI-powered haul scheduling & optimization"
+            actions={
+              <>
+                {schedules.length > 0 && (
+                  <Button onClick={exportSchedule} variant="outline">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                )}
+                <Button 
+                  onClick={handleGenerateSchedules} 
+                  disabled={isGenerating}
+                  className="bg-accent hover:bg-accent-light"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {isGenerating ? 'Generating...' : 'Generate AI Schedules'}
                 </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Logistics Scheduler</h1>
-                <p className="text-sm text-muted-foreground">AI-powered haul scheduling & optimization</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              {schedules.length > 0 && (
-                <Button onClick={exportSchedule} variant="outline">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
-              )}
-              <Button 
-                onClick={handleGenerateSchedules} 
-                disabled={isGenerating}
-                className="bg-accent hover:bg-accent-light"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {isGenerating ? 'Generating...' : 'Generate AI Schedules'}
-              </Button>
-            </div>
-          </div>
+              </>
+            }
+          />
         </div>
       </header>
 
