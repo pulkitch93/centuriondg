@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, MapPin, Clock, CheckCircle, AlertCircle, Navigation, Plus } from 'lucide-react';
+import { Truck, MapPin, Clock, CheckCircle, AlertCircle, Navigation, Plus, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -135,6 +135,10 @@ export default function Dispatches() {
             <p className="text-muted-foreground mt-2">Manage haul dispatches and tracking</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/performance')}>
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Performance
+            </Button>
             <Button variant="outline" onClick={() => navigate('/live-tracking')}>
               <MapPin className="mr-2 h-4 w-4" />
               Live GPS Tracking

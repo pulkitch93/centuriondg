@@ -14,6 +14,7 @@ import Haulers from "./pages/Haulers";
 import Dispatches from "./pages/Dispatches";
 import DriverMobile from "./pages/DriverMobile";
 import LiveTracking from "./pages/LiveTracking";
+import PerformanceDashboard from "./pages/PerformanceDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/dispatches" element={<Dispatches />} />
           <Route path="/driver-mobile/:ticketId" element={<DriverMobile />} />
           <Route path="/live-tracking" element={<LiveTracking />} />
+          <Route path="/performance" element={<PerformanceDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
