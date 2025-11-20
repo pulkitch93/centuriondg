@@ -14,7 +14,7 @@ import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck, Shield, BarCh
 export default function Dashboard() {
   const [sites, setSites] = useState<Site[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
-  const jobs = operationsStorage.getJobs();
+  const [jobs, setJobs] = useState(operationsStorage.getJobs());
 
   useEffect(() => {
     // Initialize sample data on first load
@@ -22,6 +22,7 @@ export default function Dashboard() {
     
     setSites(storage.getSites());
     setMatches(storage.getMatches());
+    setJobs(operationsStorage.getJobs());
   }, []);
 
   const exportSites = sites.filter(s => s.type === 'export');
