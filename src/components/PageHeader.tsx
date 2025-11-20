@@ -16,7 +16,7 @@ export const PageHeader = ({ title, description, actions }: PageHeaderProps) => 
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/dashboard")}
           className="flex items-center gap-2 text-foreground hover:text-foreground/80"
         >
           <ArrowLeft className="h-5 w-5" />
