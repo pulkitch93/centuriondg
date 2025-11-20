@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,8 @@ import { schedulerStorage } from '@/lib/schedulerStorage';
 import { generateSchedules } from '@/lib/scheduler';
 import { Schedule, Hauler } from '@/types/scheduler';
 import { Site, Match } from '@/types/site';
-import { ArrowLeft, Calendar, Sparkles, TrendingUp, Truck, AlertTriangle, Download } from 'lucide-react';
+import { ArrowLeft, Calendar, Sparkles, TrendingUp, Truck, AlertTriangle, Download, GripVertical, Eye } from 'lucide-react';
+import WhatIfSimulator from '@/components/WhatIfSimulator';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Scheduler() {
@@ -18,7 +20,17 @@ export default function Scheduler() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [haulers, setHaulers] = useState<Hauler[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showSimulator, setShowSimulator] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   useEffect(() => {
     setSites(storage.getSites());
@@ -117,6 +129,39 @@ export default function Scheduler() {
     toast({
       title: "Schedule exported",
       description: "CSV file downloaded successfully.",
+    });
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+
+    const scheduleId = active.id as string;
+    const newDate = over.id as string;
+
+    const updatedSchedules = schedules.map(s => 
+      s.id === scheduleId ? { ...s, date: newDate } : s
+    );
+
+    schedulerStorage.setSchedules(updatedSchedules);
+    setSchedules(updatedSchedules);
+
+    toast({
+      title: "Schedule moved",
+      description: `Rescheduled to ${new Date(newDate).toLocaleDateString()}`,
+    });
+  };
+
+  const handleSimulatorApply = (updatedSchedule: Schedule) => {
+    const allSchedules = schedulerStorage.getSchedules();
+    const updated = allSchedules.map(s => s.id === updatedSchedule.id ? updatedSchedule : s);
+    schedulerStorage.setSchedules(updated);
+    setSchedules(updated);
+    
+    toast({
+      title: "Changes applied",
+      description: "Schedule updated with simulation results.",
     });
   };
 
@@ -240,95 +285,135 @@ export default function Scheduler() {
             </TabsList>
 
             <TabsContent value="timeline">
-              <div className="space-y-6">
-                {Object.entries(groupSchedulesByDate())
-                  .sort(([a], [b]) => a.localeCompare(b))
-                  .map(([date, daySchedules]) => (
-                    <Card key={date} className="p-6 shadow-elevated">
-                      <h3 className="text-lg font-semibold text-foreground mb-4">
-                        {new Date(date).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
-                      </h3>
-                      <div className="space-y-3">
-                        {daySchedules.map(schedule => {
-                          const hauler = haulers.find(h => h.id === schedule.haulerId);
-                          const match = matches.find(m => m.id === schedule.matchId);
-                          
-                          return (
-                            <div key={schedule.id} className="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <Badge className={getStatusColor(schedule.status)}>
-                                      {schedule.status}
-                                    </Badge>
-                                    {schedule.isAiGenerated && (
-                                      <Badge variant="outline" className="border-accent text-accent">
-                                        AI Generated
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <p className="font-semibold text-foreground">
-                                    {schedule.startTime} - {schedule.endTime}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Match: {match?.exportSiteId.substring(0, 12)}...
-                                  </p>
+              <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                <div className="space-y-6">
+                  {Object.entries(groupSchedulesByDate())
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([date, daySchedules]) => (
+                      <Card 
+                        key={date} 
+                        className="p-6 shadow-elevated"
+                        data-date={date}
+                      >
+                        <h3 className="text-lg font-semibold text-foreground mb-4">
+                          {new Date(date).toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
+                        </h3>
+                        <div className="space-y-3">
+                          {daySchedules.map(schedule => {
+                            const hauler = haulers.find(h => h.id === schedule.haulerId);
+                            const match = matches.find(m => m.id === schedule.matchId);
+                            
+                            return (
+                              <div 
+                                key={schedule.id} 
+                                className="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors cursor-move relative group"
+                                draggable
+                                onDragStart={(e) => {
+                                  e.dataTransfer.effectAllowed = 'move';
+                                  e.dataTransfer.setData('scheduleId', schedule.id);
+                                }}
+                              >
+                                <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <GripVertical className="w-5 h-5 text-muted-foreground" />
                                 </div>
-                                <div className="text-right">
-                                  <p className="text-sm font-semibold text-foreground">
-                                    {hauler?.name || 'No Hauler Assigned'}
-                                  </p>
-                                  {hauler && (
-                                    <p className="text-xs text-muted-foreground">
-                                      Reliability: {hauler.reliabilityScore}%
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-4 gap-4 text-sm mb-3">
-                                <div>
-                                  <p className="text-muted-foreground">Volume</p>
-                                  <p className="font-semibold text-foreground">{schedule.volumeScheduled} yd³</p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Trucks</p>
-                                  <p className="font-semibold text-foreground">{schedule.trucksNeeded}</p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Distance</p>
-                                  <p className="font-semibold text-foreground">{schedule.route.distance.toFixed(1)} mi</p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Cost</p>
-                                  <p className="font-semibold text-foreground">${schedule.route.cost.toFixed(0)}</p>
-                                </div>
-                              </div>
-
-                              {schedule.alerts.length > 0 && (
-                                <div className="border-t border-border pt-3 space-y-2">
-                                  {schedule.alerts.map(alert => (
-                                    <div key={alert.id} className="flex items-start gap-2">
-                                      <AlertTriangle className={`w-4 h-4 mt-0.5 ${getSeverityColor(alert.severity)}`} />
-                                      <p className={`text-sm ${getSeverityColor(alert.severity)}`}>
-                                        {alert.message}
+                                <div className="ml-8">
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Badge className={getStatusColor(schedule.status)}>
+                                          {schedule.status}
+                                        </Badge>
+                                        {schedule.isAiGenerated && (
+                                          <Badge variant="outline" className="border-accent text-accent">
+                                            AI Generated
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="font-semibold text-foreground">
+                                        {schedule.startTime} - {schedule.endTime}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        Match: {match?.exportSiteId.substring(0, 12)}...
                                       </p>
                                     </div>
-                                  ))}
+                                    <div className="text-right">
+                                      <p className="text-sm font-semibold text-foreground">
+                                        {hauler?.name || 'No Hauler Assigned'}
+                                      </p>
+                                      {hauler && (
+                                        <p className="text-xs text-muted-foreground">
+                                          Reliability: {hauler.reliabilityScore}%
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-4 gap-4 text-sm mb-3">
+                                    <div>
+                                      <p className="text-muted-foreground">Volume</p>
+                                      <p className="font-semibold text-foreground">{schedule.volumeScheduled} yd³</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Trucks</p>
+                                      <p className="font-semibold text-foreground">{schedule.trucksNeeded}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Distance</p>
+                                      <p className="font-semibold text-foreground">{schedule.route.distance.toFixed(1)} mi</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground">Cost</p>
+                                      <p className="font-semibold text-foreground">${schedule.route.cost.toFixed(0)}</p>
+                                    </div>
+                                  </div>
+
+                                  {schedule.alerts.length > 0 && (
+                                    <div className="border-t border-border pt-3 space-y-2 mb-3">
+                                      {schedule.alerts.map(alert => (
+                                        <div key={alert.id} className="flex items-start gap-2">
+                                          <AlertTriangle className={`w-4 h-4 mt-0.5 ${getSeverityColor(alert.severity)}`} />
+                                          <p className={`text-sm ${getSeverityColor(alert.severity)}`}>
+                                            {alert.message}
+                                          </p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  <div className="flex gap-2 pt-3 border-t border-border">
+                                    <Link to={`/schedule/${schedule.id}`} className="flex-1">
+                                      <Button variant="outline" size="sm" className="w-full">
+                                        <Eye className="w-4 h-4 mr-2" />
+                                        View Details
+                                      </Button>
+                                    </Link>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedSchedule(schedule);
+                                        setShowSimulator(true);
+                                      }}
+                                      className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                                    >
+                                      <Sparkles className="w-4 h-4 mr-2" />
+                                      What-If
+                                    </Button>
+                                  </div>
                                 </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </Card>
-                  ))}
-              </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </Card>
+                    ))}
+                </div>
+              </DndContext>
             </TabsContent>
 
             <TabsContent value="list">
@@ -412,6 +497,14 @@ export default function Scheduler() {
           </Tabs>
         )}
       </main>
+
+      <WhatIfSimulator
+        schedule={selectedSchedule}
+        haulers={haulers}
+        open={showSimulator}
+        onOpenChange={setShowSimulator}
+        onApplyChanges={handleSimulatorApply}
+      />
     </div>
   );
 }

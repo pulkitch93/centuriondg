@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Sites from "./pages/Sites";
 import NewSite from "./pages/NewSite";
 import Scheduler from "./pages/Scheduler";
+import ScheduleDetail from "./pages/ScheduleDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/sites" element={<Sites />} />
           <Route path="/sites/new" element={<NewSite />} />
           <Route path="/scheduler" element={<Scheduler />} />
+          <Route path="/schedule/:id" element={<ScheduleDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
