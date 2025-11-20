@@ -10,6 +10,7 @@ import { geotechStorage } from '@/lib/geotechnicalStorage';
 import { GeotechReport, SoilClassification } from '@/types/geotechnical';
 import { Plus, Search, FlaskConical, FileText, Sparkles, CheckCircle2, AlertTriangle, TrendingUp, Target, Zap } from 'lucide-react';
 import ReportUpload from '@/components/ReportUpload';
+import { MaterialAnalysisDialog } from '@/components/MaterialAnalysisDialog';
 import { PageHeader } from '@/components/PageHeader';
 
 export default function MaterialsHub() {
@@ -18,6 +19,7 @@ export default function MaterialsHub() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterClassification, setFilterClassification] = useState<string>('all');
   const [showUpload, setShowUpload] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const loadReports = () => {
     const allReports = geotechStorage.getReports();
@@ -167,7 +169,12 @@ export default function MaterialsHub() {
                   IM-203 needs 1,200 CY structural fill. EX-101 has matching soil classification with 87% compaction rate.
                 </p>
               </div>
-              <Button size="sm" variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                onClick={() => setShowAnalysis(true)}
+              >
                 <Sparkles className="w-3 h-3 mr-2" />
                 View Full Analysis
               </Button>
@@ -364,6 +371,11 @@ export default function MaterialsHub() {
         open={showUpload}
         onOpenChange={setShowUpload}
         onUploadComplete={loadReports}
+      />
+
+      <MaterialAnalysisDialog
+        open={showAnalysis}
+        onOpenChange={setShowAnalysis}
       />
     </div>
   );
