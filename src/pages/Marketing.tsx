@@ -35,7 +35,7 @@ export default function Marketing() {
               real-time tracking, and automated logistics optimization.
             </p>
             <div className="flex gap-4 justify-center">
-              <Link to="/">
+              <Link to="/dashboard">
                 <Button size="lg" className="bg-primary hover:bg-primary/90">
                   Get Started <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
@@ -236,7 +236,7 @@ export default function Marketing() {
               Join leading construction companies using Centurion DG to streamline 
               their earthwork logistics and maximize profitability.
             </p>
-            <Link to="/">
+            <Link to="/dashboard">
               <Button size="lg" className="bg-primary hover:bg-primary/90">
                 Start Your Journey <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
