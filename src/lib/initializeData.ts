@@ -304,8 +304,14 @@ export function initializeSampleData() {
   const hasInitializedSites = existingSites.length > 0;
   
   if (hasInitializedSites) {
-    // Still initialize drivers and dispatches even if sites exist
+    // Still initialize drivers, dispatches, compliance, and operations even if sites exist
     initializeDriversAndDispatches();
+    
+    const { initializeComplianceData } = require('./initComplianceData');
+    initializeComplianceData();
+    
+    const { initializeOperationsData } = require('./initOperationsData');
+    initializeOperationsData();
     return;
   }
 
@@ -359,6 +365,38 @@ export function initializeSampleData() {
       status: 'pending',
       createdAt: new Date('2025-02-02').toISOString(),
     },
+    {
+      id: 'EX-104',
+      type: 'export',
+      name: 'Uptown Office Complex',
+      location: '500 N College St, Charlotte, NC 28202',
+      coordinates: { lat: 35.2276, lng: -80.8433 },
+      soilType: 'clay',
+      volume: 4500,
+      scheduleStart: '2025-02-18',
+      scheduleEnd: '2025-03-08',
+      contaminated: false,
+      priceExpectation: 5,
+      projectOwner: 'Uptown Properties LLC',
+      status: 'pending',
+      createdAt: new Date('2025-02-04').toISOString(),
+    },
+    {
+      id: 'EX-105',
+      type: 'export',
+      name: 'Steele Creek Development',
+      location: '12500 Steele Creek Rd, Charlotte, NC 28273',
+      coordinates: { lat: 35.1456, lng: -80.9632 },
+      soilType: 'loam',
+      volume: 7200,
+      scheduleStart: '2025-02-22',
+      scheduleEnd: '2025-03-15',
+      contaminated: false,
+      priceExpectation: 3,
+      projectOwner: 'Steele Creek Ventures',
+      status: 'pending',
+      createdAt: new Date('2025-02-05').toISOString(),
+    },
   ];
 
   // Sample Import Sites
@@ -410,6 +448,38 @@ export function initializeSampleData() {
       projectOwner: 'City of Charlotte Parks',
       status: 'pending',
       createdAt: new Date('2025-02-04').toISOString(),
+    },
+    {
+      id: 'IM-204',
+      type: 'import',
+      name: 'Fort Mill Industrial Park',
+      location: '4500 Highway 21, Fort Mill, SC 29715',
+      coordinates: { lat: 35.0076, lng: -80.9451 },
+      soilType: 'clay',
+      volume: 5200,
+      scheduleStart: '2025-02-16',
+      scheduleEnd: '2025-03-06',
+      contaminated: false,
+      priceExpectation: 4,
+      projectOwner: 'Fort Mill Commerce Center',
+      status: 'pending',
+      createdAt: new Date('2025-02-03').toISOString(),
+    },
+    {
+      id: 'IM-205',
+      type: 'import',
+      name: 'Lake Norman Development',
+      location: '18700 Riverfront Dr, Cornelius, NC 28031',
+      coordinates: { lat: 35.4876, lng: -80.8789 },
+      soilType: 'loam',
+      volume: 3600,
+      scheduleStart: '2025-02-25',
+      scheduleEnd: '2025-03-18',
+      contaminated: false,
+      priceExpectation: 7,
+      projectOwner: 'Lake Norman Builders',
+      status: 'pending',
+      createdAt: new Date('2025-02-05').toISOString(),
     },
   ];
 
@@ -469,10 +539,92 @@ export function initializeSampleData() {
       status: 'suggested',
       createdAt: new Date('2025-02-05').toISOString(),
     },
+    {
+      id: 'match-104-204',
+      exportSiteId: 'EX-104',
+      importSiteId: 'IM-204',
+      score: 88,
+      distance: 15,
+      costSavings: 45200,
+      carbonReduction: 2260,
+      reasons: [
+        'Excellent soil type match: clay',
+        'Great volume compatibility',
+        'Short haul distance for cost efficiency',
+        'Clean fill - no contamination',
+      ],
+      status: 'suggested',
+      createdAt: new Date('2025-02-06').toISOString(),
+    },
+    {
+      id: 'match-105-205',
+      exportSiteId: 'EX-105',
+      importSiteId: 'IM-205',
+      score: 83,
+      distance: 19,
+      costSavings: 52800,
+      carbonReduction: 2640,
+      reasons: [
+        'Good soil type match: loam',
+        'High volume compatibility',
+        'Reasonable haul distance',
+        'Clean fill material',
+      ],
+      status: 'suggested',
+      createdAt: new Date('2025-02-06').toISOString(),
+    },
+    {
+      id: 'match-104-201',
+      exportSiteId: 'EX-104',
+      importSiteId: 'IM-201',
+      score: 79,
+      distance: 14,
+      costSavings: 28400,
+      carbonReduction: 1420,
+      reasons: [
+        'Acceptable soil compatibility',
+        'Short haul distance',
+        'Moderate volume fit',
+      ],
+      status: 'suggested',
+      createdAt: new Date('2025-02-06').toISOString(),
+    },
   ];
 
   // Sample Haulers (additional to existing)
   const additionalHaulers: Hauler[] = [
+    {
+      id: 'hauler-1',
+      name: 'Rapid Logistics',
+      reliabilityScore: 96,
+      trucksAvailable: 12,
+      costPerMile: 3.0,
+      status: 'active',
+    },
+    {
+      id: 'hauler-2',
+      name: 'GreenHaul Transport',
+      reliabilityScore: 92,
+      trucksAvailable: 8,
+      costPerMile: 3.3,
+      status: 'active',
+    },
+    {
+      id: 'hauler-3',
+      name: 'Budget Movers',
+      reliabilityScore: 85,
+      trucksAvailable: 6,
+      costPerMile: 2.8,
+      status: 'active',
+    },
+    {
+      id: 'hauler-4',
+      name: 'Premier Fleet',
+      reliabilityScore: 98,
+      trucksAvailable: 15,
+      costPerMile: 3.5,
+      status: 'active',
+    },
     {
       id: 'hauler-5',
       name: 'Queen City Hauling',
@@ -1063,4 +1215,15 @@ export function initializeSampleData() {
     return hasMatch ? { ...site, status: 'matched' as const } : site;
   });
   storage.setSites(updatedSites);
+  
+  // Initialize drivers and dispatch tickets
+  initializeDriversAndDispatches();
+  
+  // Initialize compliance data
+  const { initializeComplianceData } = require('./initComplianceData');
+  initializeComplianceData();
+  
+  // Initialize operations data
+  const { initializeOperationsData } = require('./initOperationsData');
+  initializeOperationsData();
 }
