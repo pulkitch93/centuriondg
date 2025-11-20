@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,6 +22,10 @@ export default function LiveTracking() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
+  const [mapboxToken, setMapboxToken] = useState<string>(
+    localStorage.getItem('mapbox_token') || ''
+  );
+  const [showTokenInput, setShowTokenInput] = useState(!localStorage.getItem('mapbox_token'));
 
   useEffect(() => {
     loadData();
@@ -37,9 +42,9 @@ export default function LiveTracking() {
   };
 
   useEffect(() => {
-    if (!mapContainer.current || tickets.length === 0) return;
+    if (!mapContainer.current || tickets.length === 0 || !mapboxToken) return;
 
-    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
+    mapboxgl.accessToken = mapboxToken;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -198,8 +203,61 @@ export default function LiveTracking() {
     }
   };
 
+  const handleSaveToken = () => {
+    if (mapboxToken.trim()) {
+      localStorage.setItem('mapbox_token', mapboxToken);
+      setShowTokenInput(false);
+      window.location.reload(); // Reload to initialize map with token
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {showTokenInput && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Mapbox Token Required</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                To use live GPS tracking, you need a Mapbox public token. Get yours for free at{' '}
+                <a 
+                  href="https://account.mapbox.com/access-tokens/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  mapbox.com
+                </a>
+              </p>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Mapbox Public Token</label>
+                <input
+                  type="text"
+                  value={mapboxToken}
+                  onChange={(e) => setMapboxToken(e.target.value)}
+                  placeholder="pk.eyJ1..."
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleSaveToken} className="flex-1">
+                  Save Token
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/dispatches')}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
       <div className="h-screen flex flex-col">
         {/* Header */}
         <div className="bg-card border-b p-4">
@@ -213,6 +271,16 @@ export default function LiveTracking() {
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 {tickets.length} Active
               </Badge>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  localStorage.removeItem('mapbox_token');
+                  setShowTokenInput(true);
+                }}
+              >
+                Change Token
+              </Button>
               <Button variant="outline" onClick={() => navigate('/dispatches')}>
                 Back to Dispatches
               </Button>
