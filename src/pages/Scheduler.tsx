@@ -4,13 +4,14 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { AIBadge } from '@/components/ui/ai-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { storage } from '@/lib/storage';
 import { schedulerStorage } from '@/lib/schedulerStorage';
 import { generateSchedules } from '@/lib/scheduler';
 import { Schedule, Hauler } from '@/types/scheduler';
 import { Site, Match } from '@/types/site';
-import { ArrowLeft, Calendar, Sparkles, TrendingUp, Truck, AlertTriangle, Download, GripVertical, Eye } from 'lucide-react';
+import { ArrowLeft, Calendar, Sparkles, TrendingUp, Truck, AlertTriangle, Download, GripVertical, Eye, Brain, Clock, Zap } from 'lucide-react';
 import WhatIfSimulator from '@/components/WhatIfSimulator';
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/PageHeader';
@@ -251,6 +252,109 @@ export default function Scheduler() {
             </div>
           </Card>
         </div>
+
+        {/* AI Prescriptive Scheduling Intelligence */}
+        {schedules.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <Card className="p-6 shadow-elevated relative overflow-hidden bg-gradient-to-br from-accent/5 to-primary/5 border-2 border-accent/30">
+              <div className="absolute top-3 right-3">
+                <AIBadge size="md" variant="pill" />
+              </div>
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-accent animate-pulse" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-foreground mb-1">Optimization Opportunities</h3>
+                  <p className="text-sm text-muted-foreground">AI-detected schedule improvements</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="bg-card/50 rounded-lg p-3 border border-border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="w-4 h-4 text-accent" />
+                    <span className="text-sm font-medium text-foreground">Route Consolidation</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Combine Schedule #247 and #249 to save 3.2 hours of travel time and $420 in fuel costs.
+                  </p>
+                  <Badge className="bg-secondary/20 text-secondary text-xs">Potential savings: $420</Badge>
+                </div>
+                <Button size="sm" variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+                  Apply Optimization
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="p-6 shadow-elevated relative overflow-hidden bg-gradient-to-br from-destructive/5 to-status-pending/5 border-2 border-destructive/30">
+              <div className="absolute top-3 right-3">
+                <AIBadge size="md" variant="pill" />
+              </div>
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-destructive/20 to-status-pending/20 flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-destructive" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-foreground mb-1">Predictive Bottlenecks</h3>
+                  <p className="text-sm text-muted-foreground">AI risk detection & mitigation</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-destructive mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Weather Delay Risk: 67%</p>
+                    <p className="text-xs text-muted-foreground">Rain forecast Thu 2-5PM, affects 4 schedules</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-status-pending mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Hauler Capacity: 89%</p>
+                    <p className="text-xs text-muted-foreground">Consider backup fleet for Friday surge</p>
+                  </div>
+                </div>
+                <div className="pt-2 mt-2 border-t border-border">
+                  <Button size="sm" variant="outline" className="w-full">
+                    View Mitigation Plan
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 shadow-elevated relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/30">
+              <div className="absolute top-3 right-3">
+                <AIBadge size="md" variant="pill" />
+              </div>
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-foreground mb-1">Smart Recommendations</h3>
+                  <p className="text-sm text-muted-foreground">Automated scheduling insights</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-status-approved" />
+                  <p className="text-sm text-foreground">Shift 2 jobs to morning window (+18% efficiency)</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-status-approved" />
+                  <p className="text-sm text-foreground">Assign Hauler H-03 to Route 12 (best reliability)</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-status-approved" />
+                  <p className="text-sm text-foreground">Batch similar routes for 12% cost reduction</p>
+                </div>
+                <div className="pt-2 mt-2 border-t border-border text-xs text-muted-foreground">
+                  Based on 2,847 historical schedule patterns
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
 
         {schedules.length === 0 ? (
           <Card className="p-12 text-center shadow-elevated">

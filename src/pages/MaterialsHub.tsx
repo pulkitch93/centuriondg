@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { AIBadge } from '@/components/ui/ai-badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { geotechStorage } from '@/lib/geotechnicalStorage';
 import { GeotechReport, SoilClassification } from '@/types/geotechnical';
-import { Plus, Search, FlaskConical, FileText, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Plus, Search, FlaskConical, FileText, Sparkles, CheckCircle2, AlertTriangle, TrendingUp, Target, Zap } from 'lucide-react';
 import ReportUpload from '@/components/ReportUpload';
 import { PageHeader } from '@/components/PageHeader';
 
@@ -137,6 +138,108 @@ export default function MaterialsHub() {
             <div>
               <p className="text-xs text-muted-foreground">Contaminated</p>
               <p className="text-2xl font-bold text-foreground mt-1">{classificationCounts.contaminated}</p>
+            </div>
+          </Card>
+        </div>
+
+        {/* AI Prescriptive Insights */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <Card className="p-6 shadow-elevated relative overflow-hidden bg-gradient-to-br from-accent/5 to-primary/5 border-2 border-accent/30">
+            <div className="absolute top-3 right-3">
+              <AIBadge size="md" variant="pill" />
+            </div>
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center">
+                <Target className="w-6 h-6 text-accent" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-foreground mb-1">Optimal Sourcing Match</h3>
+                <p className="text-sm text-muted-foreground">AI-recommended material pairing</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="bg-card/50 rounded-lg p-3 border border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-foreground">Structural Fill Match</span>
+                  <Badge className="bg-secondary/20 text-secondary">94% Compatible</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  IM-203 needs 1,200 CY structural fill. EX-101 has matching soil classification with 87% compaction rate.
+                </p>
+              </div>
+              <Button size="sm" variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+                <Sparkles className="w-3 h-3 mr-2" />
+                View Full Analysis
+              </Button>
+            </div>
+          </Card>
+
+          <Card className="p-6 shadow-elevated relative overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/30">
+            <div className="absolute top-3 right-3">
+              <AIBadge size="md" variant="pill" />
+            </div>
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-foreground mb-1">Quality Prediction</h3>
+                <p className="text-sm text-muted-foreground">Material performance forecast</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Compaction Stability</span>
+                <span className="font-bold text-secondary">Excellent</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Moisture Variance Risk</span>
+                <span className="font-bold text-status-approved">Low</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Long-term Suitability</span>
+                <span className="font-bold text-secondary">92%</span>
+              </div>
+              <div className="pt-2 mt-2 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  Based on historical data from 47 similar projects
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 shadow-elevated relative overflow-hidden bg-gradient-to-br from-secondary/5 to-accent/5 border-2 border-secondary/30">
+            <div className="absolute top-3 right-3">
+              <AIBadge size="md" variant="pill" />
+            </div>
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-secondary/20 to-accent/20 flex items-center justify-center">
+                <Zap className="w-6 h-6 text-secondary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-foreground mb-1">Smart Recommendations</h3>
+                <p className="text-sm text-muted-foreground">Automated material insights</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-status-approved mt-0.5" />
+                <p className="text-sm text-foreground">
+                  Test EX-104 for contamination before use (soil pH: 8.2)
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-status-approved mt-0.5" />
+                <p className="text-sm text-foreground">
+                  Blend EX-102 + EX-105 for optimal gradation
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-status-pending mt-0.5" />
+                <p className="text-sm text-foreground">
+                  Schedule geotechnical review for Report GT-007
+                </p>
+              </div>
             </div>
           </Card>
         </div>
