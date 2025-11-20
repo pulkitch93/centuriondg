@@ -3,533 +3,758 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   TrendingUp, 
   TrendingDown, 
-  Award, 
-  Clock, 
-  Star, 
+  DollarSign,
   Fuel,
+  Leaf,
+  Download,
+  Target,
   AlertCircle,
-  Users,
   BarChart3,
-  Target
+  Activity
 } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { dispatchStorage } from '@/lib/dispatchStorage';
-import { storage } from '@/lib/storage';
-import { Driver, DispatchTicket } from '@/types/dispatch';
-import { Site } from '@/types/site';
-import { calculateDriverPerformance, calculatePerformanceTrends, DriverPerformanceMetrics } from '@/lib/performanceMetrics';
-
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area } from 'recharts';
+import { 
+  calculateExecutiveKPIs,
+  calculateProfitability,
+  calculateTrends,
+  generateForecast,
+  runScenarioSimulation,
+  calculateSustainability,
+  exportToCSV
+} from '@/lib/performanceCalculations';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function PerformanceDashboard() {
   const navigate = useNavigate();
-  const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [tickets, setTickets] = useState<DispatchTicket[]>([]);
-  const [sites, setSites] = useState<Site[]>([]);
-  const [metrics, setMetrics] = useState<DriverPerformanceMetrics[]>([]);
-  const [selectedDriver, setSelectedDriver] = useState<string>('all');
-  const [timeRange, setTimeRange] = useState<string>('30');
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (drivers.length > 0 && tickets.length > 0) {
-      calculateMetrics();
-    }
-  }, [drivers, tickets, sites]);
-
-  const loadData = () => {
-    const allDrivers = dispatchStorage.getDrivers();
-    const allTickets = dispatchStorage.getDispatchTickets();
-    const allSites = storage.getSites();
-    
-    setDrivers(allDrivers);
-    setTickets(allTickets);
-    setSites(allSites);
-  };
-
-  const calculateMetrics = () => {
-    const driverMetrics = drivers.map(driver => 
-      calculateDriverPerformance(driver, tickets, sites)
-    );
-    setMetrics(driverMetrics);
-  };
-
-  const filteredMetrics = selectedDriver === 'all' 
-    ? metrics 
-    : metrics.filter(m => m.driverId === selectedDriver);
-
-  const performanceTrends = calculatePerformanceTrends(
-    selectedDriver === 'all' 
-      ? tickets 
-      : tickets.filter(t => t.driverId === selectedDriver),
-    parseInt(timeRange)
-  );
-
-  const totalMetrics = {
-    totalDeliveries: metrics.reduce((sum, m) => sum + m.totalDeliveries, 0),
-    averageOnTimeRate: metrics.length > 0 
-      ? metrics.reduce((sum, m) => sum + m.onTimeRate, 0) / metrics.length 
-      : 0,
-    averageRating: metrics.length > 0
-      ? metrics.reduce((sum, m) => sum + m.averageRating, 0) / metrics.length
-      : 0,
-    totalVolume: metrics.reduce((sum, m) => sum + m.totalVolume, 0),
-  };
-
-  const driverComparison = metrics.map(m => ({
-    name: m.driverName,
-    onTimeRate: m.onTimeRate,
-    rating: m.averageRating,
-    deliveries: m.totalDeliveries,
-    score: m.performanceScore,
+  const [kpis, setKpis] = useState(calculateExecutiveKPIs(7));
+  const [profitability, setProfitability] = useState(calculateProfitability());
+  const [trends, setTrends] = useState(calculateTrends(30));
+  const [forecast, setForecast] = useState(generateForecast());
+  const [sustainability, setSustainability] = useState(calculateSustainability(30));
+  
+  // Scenario modeling state
+  const [fuelCostChange, setFuelCostChange] = useState(0);
+  const [volumeChange, setVolumeChange] = useState(0);
+  const [haulerRateChange, setHaulerRateChange] = useState(0);
+  const [scenarioResult, setScenarioResult] = useState(runScenarioSimulation({
+    fuelCostChange: 0,
+    volumeChange: 0,
+    haulerRateChange: 0
   }));
 
-  const fuelEfficiencyData = metrics
-    .filter(m => m.fuelEfficiency > 0)
-    .map(m => ({
-      name: m.driverName,
-      efficiency: m.fuelEfficiency,
-    }));
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setKpis(calculateExecutiveKPIs(7));
+      setProfitability(calculateProfitability());
+      setTrends(calculateTrends(30));
+      setForecast(generateForecast());
+      setSustainability(calculateSustainability(30));
+    }, 30000);
 
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 75) return 'text-yellow-600';
-    return 'text-red-600';
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleScenarioChange = () => {
+    const result = runScenarioSimulation({
+      fuelCostChange,
+      volumeChange,
+      haulerRateChange
+    });
+    setScenarioResult(result);
   };
 
-  const getScoreBadge = (score: number) => {
-    if (score >= 90) return 'bg-green-500';
-    if (score >= 75) return 'bg-yellow-500';
-    return 'bg-red-500';
+  useEffect(() => {
+    handleScenarioChange();
+  }, [fuelCostChange, volumeChange, haulerRateChange]);
+
+  const handleExport = (data: any[], filename: string) => {
+    exportToCSV(data, filename);
   };
 
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground">Performance Dashboard</h1>
-            <p className="text-muted-foreground mt-2">Driver metrics and analytics</p>
-          </div>
-          <div className="flex gap-2">
-            <Select value={selectedDriver} onValueChange={setSelectedDriver}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select driver" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Drivers</SelectItem>
-                {drivers.map(driver => (
-                  <SelectItem key={driver.id} value={driver.id}>
-                    {driver.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">7 Days</SelectItem>
-                <SelectItem value="30">30 Days</SelectItem>
-                <SelectItem value="90">90 Days</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" onClick={() => navigate('/dispatches')}>
-              Back
+        <PageHeader
+          title="Executive Intelligence Dashboard"
+          description="Comprehensive business analytics and forecasting"
+          actions={
+            <Button variant="outline" onClick={() => navigate('/dashboard')}>
+              Back to Dashboard
             </Button>
-          </div>
-        </div>
+          }
+        />
 
-        {/* Overview Stats */}
+        {/* Executive KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Deliveries</CardTitle>
+              <CardTitle className="text-sm font-medium">Weekly Volume</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalMetrics.totalDeliveries}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Across {drivers.length} drivers
-              </p>
+              <div className="text-2xl font-bold">{kpis.totalVolumeWeek.toLocaleString()} CY</div>
+              <p className="text-xs text-muted-foreground mt-1">Last 7 days</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">On-Time Rate</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Avg Cost per CY</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalMetrics.averageOnTimeRate.toFixed(1)}%</div>
+              <div className="text-2xl font-bold">${kpis.avgCostPerCY}</div>
+              <p className="text-xs text-muted-foreground mt-1">Per cubic yard</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{kpis.profitMargin}%</div>
               <div className="flex items-center gap-1 text-xs text-green-600 mt-1">
                 <TrendingUp className="h-3 w-3" />
-                <span>Industry average: 85%</span>
+                <span>Industry avg: 25%</span>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold flex items-center gap-1">
-                {totalMetrics.averageRating.toFixed(1)}
-                <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Out of 5.0 stars
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Volume</CardTitle>
+              <CardTitle className="text-sm font-medium">Hauler Reliability</CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalMetrics.totalVolume.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Cubic yards delivered
-              </p>
+              <div className="text-2xl font-bold">{kpis.haulerReliabilityAvg}%</div>
+              <p className="text-xs text-muted-foreground mt-1">Average score</p>
             </CardContent>
           </Card>
         </div>
 
+        {/* Sustainability Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Fuel Savings</CardTitle>
+              <Fuel className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{kpis.fuelSavings.toLocaleString()} gal</div>
+              <p className="text-xs text-muted-foreground mt-1">vs. landfill alternative</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">CO₂ Reduction</CardTitle>
+              <Leaf className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{kpis.co2Reduction} tons</div>
+              <p className="text-xs text-muted-foreground mt-1">Carbon emissions saved</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Distance Saved</CardTitle>
+              <Activity className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600">{kpis.avgHaulDistanceSaved} mi</div>
+              <p className="text-xs text-muted-foreground mt-1">Per haul average</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Export Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5" />
+              Quick Export
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handleExport(trends, 'performance-trends.csv')}
+            >
+              Export Trends
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handleExport(profitability.byJob, 'profitability-by-job.csv')}
+            >
+              Export Profitability
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handleExport(forecast, 'forecast-data.csv')}
+            >
+              Export Forecast
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handleExport([sustainability], 'sustainability-metrics.csv')}
+            >
+              Export Sustainability
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Main Content Tabs */}
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
+        <Tabs defaultValue="trends" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="trends">Trends</TabsTrigger>
-            <TabsTrigger value="comparison">Comparison</TabsTrigger>
-            <TabsTrigger value="individual">Individual</TabsTrigger>
+            <TabsTrigger value="profitability">Profitability</TabsTrigger>
+            <TabsTrigger value="forecast">Forecast</TabsTrigger>
+            <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
+            <TabsTrigger value="sustainability">Sustainability</TabsTrigger>
           </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-4 mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Performance Trends (Last {timeRange} Days)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={performanceTrends}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="date" 
-                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="onTimeRate" stroke="#3b82f6" name="On-Time Rate (%)" />
-                      <Line type="monotone" dataKey="averageRating" stroke="#10b981" name="Avg Rating" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Fuel Efficiency by Driver</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={fuelEfficiencyData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis label={{ value: 'CY per Gallon', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip />
-                      <Bar dataKey="efficiency" fill="#10b981" name="Efficiency (CY/gal)" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
 
           {/* Trends Tab */}
           <TabsContent value="trends" className="space-y-4 mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Daily Deliveries & Performance</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>30-Day Performance Trends</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleExport(trends, 'trends.csv')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={performanceTrends}>
+                  <ComposedChart data={trends}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
-                      dataKey="date"
+                      dataKey="date" 
                       tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     />
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="deliveries" fill="#3b82f6" name="Deliveries" />
-                    <Line yAxisId="right" type="monotone" dataKey="onTimeRate" stroke="#10b981" name="On-Time Rate (%)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Comparison Tab */}
-          <TabsContent value="comparison" className="space-y-4 mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Driver Performance Comparison</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={driverComparison}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="score" fill="#3b82f6" name="Performance Score" />
-                    <Bar dataKey="onTimeRate" fill="#10b981" name="On-Time Rate (%)" />
-                  </BarChart>
+                    <Area yAxisId="left" type="monotone" dataKey="volume" fill="#3b82f6" stroke="#3b82f6" name="Volume (CY)" fillOpacity={0.3} />
+                    <Line yAxisId="right" type="monotone" dataKey="profit" stroke="#10b981" name="Profit ($)" strokeWidth={2} />
+                    <Line yAxisId="right" type="monotone" dataKey="cost" stroke="#ef4444" name="Cost ($)" strokeWidth={2} />
+                  </ComposedChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {metrics.map(metric => (
-                <Card key={metric.driverId}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{metric.driverName}</CardTitle>
-                      <Badge className={getScoreBadge(metric.performanceScore)}>
-                        {metric.performanceScore}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Deliveries:</span>
-                      <span className="font-semibold">{metric.totalDeliveries}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">On-Time:</span>
-                      <span className="font-semibold">{metric.onTimeRate.toFixed(1)}%</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Rating:</span>
-                      <span className="font-semibold flex items-center gap-1">
-                        {metric.averageRating.toFixed(1)}
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Issues:</span>
-                      <span className={`font-semibold ${metric.issuesReported > 5 ? 'text-red-600' : ''}`}>
-                        {metric.issuesReported}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue vs Cost Trend</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={trends}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date"
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="revenue" fill="#10b981" name="Revenue ($)" />
+                      <Bar dataKey="cost" fill="#ef4444" name="Cost ($)" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cost per Mile Trend</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={trends}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date"
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="costPerMile" stroke="#8b5cf6" name="Cost/Mile ($)" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
-          {/* Individual Tab */}
-          <TabsContent value="individual" className="space-y-4 mt-6">
-            {selectedDriver === 'all' ? (
+          {/* Profitability Tab */}
+          <TabsContent value="profitability" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Profitability by Region</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleExport(profitability.byRegion, 'profitability-by-region.csv')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={profitability.byRegion}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="region" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="revenue" fill="#3b82f6" name="Revenue ($)" />
+                    <Bar dataKey="cost" fill="#ef4444" name="Cost ($)" />
+                    <Bar dataKey="profit" fill="#10b981" name="Profit ($)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
-                <CardContent className="p-12 text-center">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-lg text-muted-foreground">
-                    Select a specific driver to view detailed individual metrics
-                  </p>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Profitability by Hauler</CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleExport(profitability.byHauler, 'profitability-by-hauler.csv')}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={profitability.byHauler} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="haulerName" type="category" width={100} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="profit" fill="#10b981" name="Profit ($)" />
+                      <Bar dataKey="margin" fill="#8b5cf6" name="Margin (%)" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </CardContent>
               </Card>
-            ) : (
-              <>
-                {filteredMetrics.map(metric => (
-                  <div key={metric.driverId} className="space-y-6">
-                    <Card>
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <CardTitle className="text-2xl">{metric.driverName}</CardTitle>
-                            <p className="text-muted-foreground mt-1">Detailed Performance Breakdown</p>
-                          </div>
-                          <div className="text-right">
-                            <div className={`text-4xl font-bold ${getScoreColor(metric.performanceScore)}`}>
-                              {metric.performanceScore}
-                            </div>
-                            <p className="text-sm text-muted-foreground">Performance Score</p>
-                          </div>
+
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Top 10 Jobs by Profit</CardTitle>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleExport(profitability.byJob, 'profitability-by-job.csv')}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={profitability.byJob.sort((a, b) => b.profit - a.profit).slice(0, 10)}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="jobName" angle={-45} textAnchor="end" height={100} />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="profit" fill="#10b981" name="Profit ($)" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Detailed Job Profitability</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-2">Job</th>
+                        <th className="text-right p-2">Revenue</th>
+                        <th className="text-right p-2">Cost</th>
+                        <th className="text-right p-2">Profit</th>
+                        <th className="text-right p-2">Margin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {profitability.byJob.map((job, idx) => (
+                        <tr key={idx} className="border-b hover:bg-muted/50">
+                          <td className="p-2">{job.jobName}</td>
+                          <td className="text-right p-2">${job.revenue.toLocaleString()}</td>
+                          <td className="text-right p-2">${job.cost.toLocaleString()}</td>
+                          <td className="text-right p-2 font-semibold text-green-600">${job.profit.toLocaleString()}</td>
+                          <td className="text-right p-2">{job.margin.toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Forecast Tab */}
+          <TabsContent value="forecast" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Supply & Demand Forecasting</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleExport(forecast, 'forecast.csv')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {forecast.map((f, idx) => (
+                    <div key={idx} className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold">{f.period}</h3>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Confidence:</span>
+                          <span className="font-semibold">{f.confidence}%</span>
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Demand for Fill</p>
+                          <p className="text-2xl font-bold text-orange-600">{f.demandForFill.toLocaleString()} CY</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Expected Supply</p>
+                          <p className="text-2xl font-bold text-blue-600">{f.expectedSupply.toLocaleString()} CY</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Gap</p>
+                          <p className={`text-2xl font-bold ${f.gap >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {f.gap >= 0 ? '+' : ''}{f.gap.toLocaleString()} CY
+                          </p>
+                        </div>
+                      </div>
+                      {f.gap < 0 && (
+                        <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                          <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">Total Deliveries</p>
-                            <p className="text-2xl font-bold">{metric.totalDeliveries}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-1">On-Time Deliveries</p>
-                            <p className="text-2xl font-bold text-green-600">{metric.onTimeDeliveries}</p>
-                            <p className="text-xs text-muted-foreground">{metric.onTimeRate.toFixed(1)}%</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-1">Avg Delivery Time</p>
-                            <p className="text-2xl font-bold">{Math.round(metric.averageDeliveryTime)} min</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-1">Customer Rating</p>
-                            <div className="flex items-center gap-2">
-                              <p className="text-2xl font-bold">{metric.averageRating.toFixed(1)}</p>
-                              <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-1">Total Volume</p>
-                            <p className="text-2xl font-bold">{metric.totalVolume.toLocaleString()}</p>
-                            <p className="text-xs text-muted-foreground">cubic yards</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-1">Fuel Efficiency</p>
-                            <p className="text-2xl font-bold">{metric.fuelEfficiency.toFixed(1)}</p>
-                            <p className="text-xs text-muted-foreground">CY per gallon</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-1">Total Distance</p>
-                            <p className="text-2xl font-bold">{metric.totalDistance.toFixed(0)}</p>
-                            <p className="text-xs text-muted-foreground">miles</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-1">Issues Reported</p>
-                            <p className={`text-2xl font-bold ${metric.issuesReported > 5 ? 'text-red-600' : 'text-green-600'}`}>
-                              {metric.issuesReported}
+                            <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">Supply Gap Warning</p>
+                            <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                              Projected deficit of {Math.abs(f.gap).toLocaleString()} CY. Consider activating additional import sites or reducing export commitments.
                             </p>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Performance Breakdown</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div>
-                              <div className="flex justify-between mb-2">
-                                <span className="text-sm">On-Time Delivery</span>
-                                <span className="text-sm font-semibold">{metric.onTimeRate.toFixed(0)}%</span>
-                              </div>
-                              <div className="w-full bg-secondary rounded-full h-2">
-                                <div 
-                                  className="bg-green-500 h-2 rounded-full transition-all" 
-                                  style={{ width: `${metric.onTimeRate}%` }}
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between mb-2">
-                                <span className="text-sm">Customer Satisfaction</span>
-                                <span className="text-sm font-semibold">{(metric.averageRating * 20).toFixed(0)}%</span>
-                              </div>
-                              <div className="w-full bg-secondary rounded-full h-2">
-                                <div 
-                                  className="bg-yellow-500 h-2 rounded-full transition-all" 
-                                  style={{ width: `${metric.averageRating * 20}%` }}
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between mb-2">
-                                <span className="text-sm">Issue-Free Rate</span>
-                                <span className="text-sm font-semibold">
-                                  {metric.totalDeliveries > 0 
-                                    ? ((metric.totalDeliveries - metric.issuesReported) / metric.totalDeliveries * 100).toFixed(0)
-                                    : 0}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-secondary rounded-full h-2">
-                                <div 
-                                  className="bg-blue-500 h-2 rounded-full transition-all" 
-                                  style={{ 
-                                    width: `${metric.totalDeliveries > 0 
-                                      ? (metric.totalDeliveries - metric.issuesReported) / metric.totalDeliveries * 100 
-                                      : 0}%` 
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+          {/* Scenarios Tab */}
+          <TabsContent value="scenarios" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>What-If Scenario Modeling</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="fuel-cost">Fuel Cost Change (%)</Label>
+                    <Input
+                      id="fuel-cost"
+                      type="number"
+                      value={fuelCostChange}
+                      onChange={(e) => setFuelCostChange(Number(e.target.value))}
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Current: {fuelCostChange > 0 ? '+' : ''}{fuelCostChange}%
+                    </p>
+                  </div>
 
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Key Achievements</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            {metric.onTimeRate >= 95 && (
-                              <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                                <Award className="h-5 w-5 text-green-600 mt-0.5" />
-                                <div>
-                                  <p className="font-semibold text-sm">Exceptional Punctuality</p>
-                                  <p className="text-xs text-muted-foreground">{metric.onTimeRate.toFixed(1)}% on-time delivery rate</p>
-                                </div>
-                              </div>
-                            )}
-                            {metric.averageRating >= 4.5 && (
-                              <div className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
-                                <Star className="h-5 w-5 text-yellow-600 mt-0.5" />
-                                <div>
-                                  <p className="font-semibold text-sm">Customer Favorite</p>
-                                  <p className="text-xs text-muted-foreground">{metric.averageRating.toFixed(1)} star average rating</p>
-                                </div>
-                              </div>
-                            )}
-                            {metric.issuesReported === 0 && metric.totalDeliveries > 0 && (
-                              <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                                <TrendingUp className="h-5 w-5 text-blue-600 mt-0.5" />
-                                <div>
-                                  <p className="font-semibold text-sm">Perfect Record</p>
-                                  <p className="text-xs text-muted-foreground">No issues reported</p>
-                                </div>
-                              </div>
-                            )}
-                            {metric.totalVolume > 1000 && (
-                              <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                                <Target className="h-5 w-5 text-purple-600 mt-0.5" />
-                                <div>
-                                  <p className="font-semibold text-sm">High Volume Performer</p>
-                                  <p className="text-xs text-muted-foreground">{metric.totalVolume.toLocaleString()} CY delivered</p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="volume">Volume Change (%)</Label>
+                    <Input
+                      id="volume"
+                      type="number"
+                      value={volumeChange}
+                      onChange={(e) => setVolumeChange(Number(e.target.value))}
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Current: {volumeChange > 0 ? '+' : ''}{volumeChange}%
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="hauler-rate">Hauler Rate Change (%)</Label>
+                    <Input
+                      id="hauler-rate"
+                      type="number"
+                      value={haulerRateChange}
+                      onChange={(e) => setHaulerRateChange(Number(e.target.value))}
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Current: {haulerRateChange > 0 ? '+' : ''}{haulerRateChange}%
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Profit Margin</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Current:</span>
+                          <span className="font-semibold">{scenarioResult.originalMargin}%</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Projected:</span>
+                          <span className={`font-bold text-lg ${scenarioResult.newMargin >= scenarioResult.originalMargin ? 'text-green-600' : 'text-red-600'}`}>
+                            {scenarioResult.newMargin}%
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-sm">
+                          {scenarioResult.newMargin >= scenarioResult.originalMargin ? (
+                            <TrendingUp className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4 text-red-600" />
+                          )}
+                          <span className={scenarioResult.newMargin >= scenarioResult.originalMargin ? 'text-green-600' : 'text-red-600'}>
+                            {(scenarioResult.newMargin - scenarioResult.originalMargin).toFixed(1)}% change
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Cost per CY</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Current:</span>
+                          <span className="font-semibold">${scenarioResult.originalCostPerCY}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Projected:</span>
+                          <span className={`font-bold text-lg ${scenarioResult.newCostPerCY <= scenarioResult.originalCostPerCY ? 'text-green-600' : 'text-red-600'}`}>
+                            ${scenarioResult.newCostPerCY}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-sm">
+                          {scenarioResult.newCostPerCY <= scenarioResult.originalCostPerCY ? (
+                            <TrendingDown className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <TrendingUp className="h-4 w-4 text-red-600" />
+                          )}
+                          <span className={scenarioResult.newCostPerCY <= scenarioResult.originalCostPerCY ? 'text-green-600' : 'text-red-600'}>
+                            ${(scenarioResult.newCostPerCY - scenarioResult.originalCostPerCY).toFixed(2)} change
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Total Profit</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Current:</span>
+                          <span className="font-semibold">${scenarioResult.originalProfit.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Projected:</span>
+                          <span className={`font-bold text-lg ${scenarioResult.newProfit >= scenarioResult.originalProfit ? 'text-green-600' : 'text-red-600'}`}>
+                            ${scenarioResult.newProfit.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-sm">
+                          {scenarioResult.newProfit >= scenarioResult.originalProfit ? (
+                            <TrendingUp className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4 text-red-600" />
+                          )}
+                          <span className={scenarioResult.newProfit >= scenarioResult.originalProfit ? 'text-green-600' : 'text-red-600'}>
+                            ${(scenarioResult.newProfit - scenarioResult.originalProfit).toLocaleString()} change
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="p-4 bg-muted rounded-lg">
+                  <h4 className="font-semibold mb-2">Impact Assessment</h4>
+                  <p className="text-sm">{scenarioResult.impact}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Sustainability Tab */}
+          <TabsContent value="sustainability" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Sustainability Metrics (Last 30 Days)</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleExport([sustainability], 'sustainability.csv')}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Leaf className="h-4 w-4 text-green-600" />
+                        Carbon Saved
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-green-600">{sustainability.carbonSaved} tons</div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        CO₂ emissions reduced vs. landfill disposal
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Activity className="h-4 w-4 text-blue-600" />
+                        Mileage Reduced
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-blue-600">{sustainability.mileageReduced.toLocaleString()} mi</div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Total miles saved through optimized routing
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800">
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Fuel className="h-4 w-4 text-orange-600" />
+                        Fuel Saved
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-orange-600">{sustainability.fuelSaved.toLocaleString()} gal</div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Gallons of diesel fuel conserved
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Landfill Diverted</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold">{sustainability.landfillDiverted.toLocaleString()} CY</div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Cubic yards redirected from landfills
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Cost Savings vs. Landfill</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-green-600">${sustainability.costSavingsVsLandfill.toLocaleString()}</div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Total savings compared to landfill disposal costs
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-6 p-6 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 rounded-lg border">
+                  <h3 className="text-lg font-semibold mb-4">Environmental Impact Summary</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground mb-1">Equivalent Trees Planted:</p>
+                      <p className="text-xl font-bold">{Math.round(sustainability.carbonSaved * 40)} trees</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">Equivalent Cars Off Road:</p>
+                      <p className="text-xl font-bold">{Math.round(sustainability.carbonSaved * 0.22)} vehicles</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">Energy Saved:</p>
+                      <p className="text-xl font-bold">{Math.round(sustainability.fuelSaved * 0.138)} MWh</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">Waste Diverted:</p>
+                      <p className="text-xl font-bold">{Math.round(sustainability.landfillDiverted * 1.4)} tons</p>
                     </div>
                   </div>
-                ))}
-              </>
-            )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
