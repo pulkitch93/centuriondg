@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { AIBadge } from '@/components/ui/ai-badge';
 import { storage } from '@/lib/storage';
 import { schedulerStorage } from '@/lib/schedulerStorage';
 import { dispatchStorage } from '@/lib/dispatchStorage';
@@ -98,13 +99,19 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className="p-6 shadow-subtle border-l-4 border-l-accent">
+          <Card className="p-6 shadow-elevated border-l-4 border-l-accent relative overflow-hidden bg-gradient-to-br from-accent/5 to-primary/5">
+            <div className="absolute top-2 right-2">
+              <AIBadge size="sm" variant="pill" />
+            </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">AI Matches</p>
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  AI Matches
+                  <span className="inline-block w-2 h-2 bg-accent rounded-full animate-pulse" />
+                </p>
                 <p className="text-3xl font-bold text-foreground mt-1">{suggestedMatches.length}</p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center animate-pulse-subtle">
                 <Sparkles className="w-6 h-6 text-accent" />
               </div>
             </div>
@@ -142,10 +149,15 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-          <Card className="p-8 shadow-elevated text-center">
-            <Sparkles className="w-12 h-12 text-accent mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-foreground mb-2">Start Creating Sites</h2>
-            <p className="text-muted-foreground mb-6">Add export and import sites to let our AI find the best matches</p>
+          <Card className="p-8 shadow-elevated text-center relative overflow-hidden bg-gradient-to-br from-accent/5 to-primary/5">
+            <div className="absolute top-3 right-3">
+              <AIBadge size="md" variant="pill" />
+            </div>
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mx-auto mb-4 animate-pulse-subtle">
+              <Sparkles className="w-8 h-8 text-accent" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">AI-Powered Site Matching</h2>
+            <p className="text-muted-foreground mb-6">Add export and import sites to let our AI find the best matches and optimize costs</p>
             <Link to="/sites">
               <Button size="lg" className="bg-primary hover:bg-primary-dark">
                 Go to Job Board

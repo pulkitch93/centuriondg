@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { AIBadge } from '@/components/ui/ai-badge';
 import { 
   Sparkles, 
   TrendingUp, 
@@ -12,7 +13,8 @@ import {
   ArrowRight,
   Truck,
   Clock,
-  DollarSign
+  DollarSign,
+  Bot
 } from 'lucide-react';
 
 export default function Marketing() {
@@ -61,14 +63,20 @@ export default function Marketing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="p-8 hover:shadow-elevated transition-shadow">
-              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                <Sparkles className="w-7 h-7 text-primary" />
+            <Card className="p-8 hover:shadow-2xl transition-all relative overflow-hidden bg-gradient-to-br from-accent/10 via-primary/5 to-accent/5 border-2 border-accent/30">
+              <div className="absolute top-3 right-3">
+                <AIBadge size="md" variant="pill" />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-3">AI-Powered Matching</h3>
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 animate-pulse-subtle">
+                <Sparkles className="w-7 h-7 text-primary animate-pulse" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-3 flex items-center gap-2">
+                AI-Powered Matching
+                <span className="inline-block w-2 h-2 bg-accent rounded-full animate-pulse" />
+              </h3>
               <p className="text-muted-foreground">
                 Our intelligent algorithm automatically matches export sites with import sites, 
-                optimizing for distance, volume, and cost savings.
+                optimizing for distance, volume, and cost savings in real-time.
               </p>
             </Card>
 
@@ -83,24 +91,30 @@ export default function Marketing() {
               </p>
             </Card>
 
-            <Card className="p-8 hover:shadow-elevated transition-shadow">
+            <Card className="p-8 hover:shadow-2xl transition-all relative overflow-hidden bg-gradient-to-br from-accent/5 to-primary/5 border-2 border-accent/20">
+              <div className="absolute top-3 right-3">
+                <AIBadge size="sm" variant="minimal" />
+              </div>
               <div className="w-14 h-14 rounded-full bg-accent/10 flex items-center justify-center mb-6">
                 <Truck className="w-7 h-7 text-accent" />
               </div>
               <h3 className="text-xl font-bold text-foreground mb-3">Smart Dispatching</h3>
               <p className="text-muted-foreground">
-                Automated load assignments and route optimization ensure maximum 
+                AI-powered load assignments and route optimization ensure maximum 
                 efficiency and minimal idle time for your hauler fleet.
               </p>
             </Card>
 
-            <Card className="p-8 hover:shadow-elevated transition-shadow">
+            <Card className="p-8 hover:shadow-2xl transition-all relative overflow-hidden bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-primary/20">
+              <div className="absolute top-3 right-3">
+                <AIBadge size="sm" variant="minimal" />
+              </div>
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-6">
                 <Clock className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-xl font-bold text-foreground mb-3">Dynamic Scheduling</h3>
               <p className="text-muted-foreground">
-                Intelligent scheduling system that adapts to weather, site conditions, 
+                Intelligent scheduling system powered by AI that adapts to weather, site conditions, 
                 and resource availability in real-time.
               </p>
             </Card>
@@ -116,13 +130,16 @@ export default function Marketing() {
               </p>
             </Card>
 
-            <Card className="p-8 hover:shadow-elevated transition-shadow">
+            <Card className="p-8 hover:shadow-2xl transition-all relative overflow-hidden bg-gradient-to-br from-secondary/5 to-accent/5 border-2 border-secondary/20">
+              <div className="absolute top-3 right-3">
+                <AIBadge size="sm" variant="minimal" />
+              </div>
               <div className="w-14 h-14 rounded-full bg-secondary/10 flex items-center justify-center mb-6">
                 <BarChart3 className="w-7 h-7 text-secondary" />
               </div>
               <h3 className="text-xl font-bold text-foreground mb-3">Executive Intelligence</h3>
               <p className="text-muted-foreground">
-                Comprehensive analytics dashboard with KPIs, profitability tracking, 
+                AI-driven analytics dashboard with KPIs, profitability tracking, 
                 and predictive insights for data-driven decisions.
               </p>
             </Card>
