@@ -32,11 +32,16 @@ export default function Dashboard() {
               <h1 className="text-2xl font-bold text-foreground">Centurion DG Platform</h1>
               <p className="text-sm text-muted-foreground">Intelligent Earthwork Logistics</p>
             </div>
-            <Link to="/sites">
-              <Button className="bg-primary hover:bg-primary-dark">
-                View Job Board
-              </Button>
-            </Link>
+            <div className="flex gap-3">
+              <Link to="/scheduler">
+                <Button variant="outline">View Scheduler</Button>
+              </Link>
+              <Link to="/sites">
+                <Button className="bg-primary hover:bg-primary-dark">
+                  View Job Board
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
