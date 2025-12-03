@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,22 +7,33 @@ import { storage } from '@/lib/storage';
 import { schedulerStorage } from '@/lib/schedulerStorage';
 import { dispatchStorage } from '@/lib/dispatchStorage';
 import { operationsStorage } from '@/lib/operationsStorage';
+import { municipalityStorage } from '@/lib/municipalityStorage';
+import { leadStorage } from '@/lib/leadStorage';
 import { initializeSampleData } from '@/lib/initializeData';
+import { initializePermitData } from '@/lib/initPermitData';
+import { calculateEarthworkScore } from '@/lib/permitScoring';
 import { Site, Match } from '@/types/site';
-import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck, Shield, BarChart3 } from 'lucide-react';
+import { Permit } from '@/types/municipality';
+import { Lead } from '@/types/lead';
+import { MapPin, TrendingUp, Sparkles, CheckCircle2, Users, Truck, Shield, BarChart3, FileText, Briefcase } from 'lucide-react';
 
 export default function Dashboard() {
   const [sites, setSites] = useState<Site[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [jobs, setJobs] = useState(operationsStorage.getJobs());
+  const [permits, setPermits] = useState<Permit[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
 
   useEffect(() => {
     // Initialize sample data on first load
     initializeSampleData();
+    initializePermitData();
     
     setSites(storage.getSites());
     setMatches(storage.getMatches());
     setJobs(operationsStorage.getJobs());
+    setPermits(municipalityStorage.getPermits());
+    setLeads(leadStorage.getLeads());
   }, []);
 
   const exportSites = sites.filter(s => s.type === 'export');
@@ -32,6 +43,14 @@ export default function Dashboard() {
 
   const totalVolume = sites.reduce((sum, site) => sum + site.volume, 0);
   const totalSavings = approvedMatches.reduce((sum, match) => sum + match.costSavings, 0);
+  
+  // Permits & Leads insights
+  const earthworkPermits = permits.filter(p => p.estimatedEarthworkFlag === 'yes');
+  const activeLeads = leads.filter(l => l.leadStatus !== 'converted_to_job' && l.leadStatus !== 'disqualified');
+  const highScorePermits = useMemo(() => 
+    permits.filter(p => calculateEarthworkScore(p).score >= 70).length, 
+    [permits]
+  );
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -148,6 +167,54 @@ export default function Dashboard() {
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold text-secondary">${totalSavings.toLocaleString()}</span>
               <TrendingUp className="w-6 h-6 text-secondary" />
+            </div>
+          </Card>
+        </div>
+
+        {/* Permits & Leads Insights */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          <Card className="p-6 shadow-elevated border-l-4 border-l-primary relative overflow-hidden bg-gradient-to-br from-primary/5 to-accent/5">
+            <div className="absolute top-2 right-2">
+              <AIBadge size="sm" variant="minimal" />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  High-Score Permits
+                  <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse" />
+                </p>
+                <p className="text-3xl font-bold text-foreground mt-1">{highScorePermits}</p>
+                <p className="text-xs text-muted-foreground">AI Score ≥70%</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-primary" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 shadow-subtle border-l-4 border-l-status-approved">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Earthwork Permits</p>
+                <p className="text-3xl font-bold text-foreground mt-1">{earthworkPermits.length}</p>
+                <p className="text-xs text-muted-foreground">of {permits.length} total</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-status-approved/10 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-status-approved" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 shadow-subtle border-l-4 border-l-accent">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Active Leads</p>
+                <p className="text-3xl font-bold text-foreground mt-1">{activeLeads.length}</p>
+                <p className="text-xs text-muted-foreground">{leads.filter(l => l.leadStatus === 'converted_to_job').length} converted</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
+                <Briefcase className="w-6 h-6 text-accent" />
+              </div>
             </div>
           </Card>
         </div>

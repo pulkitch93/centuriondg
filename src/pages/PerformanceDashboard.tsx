@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AIBadge } from '@/components/ui/ai-badge';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -15,7 +16,11 @@ import {
   Target,
   AlertCircle,
   BarChart3,
-  Activity
+  Activity,
+  FileText,
+  Briefcase,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area } from 'recharts';
 import { 
@@ -27,6 +32,12 @@ import {
   calculateSustainability,
   exportToCSV
 } from '@/lib/performanceCalculations';
+import { municipalityStorage } from '@/lib/municipalityStorage';
+import { leadStorage } from '@/lib/leadStorage';
+import { initializePermitData } from '@/lib/initPermitData';
+import { calculateEarthworkScore } from '@/lib/permitScoring';
+import { Permit } from '@/types/municipality';
+import { Lead } from '@/types/lead';
 import { PageHeader } from '@/components/PageHeader';
 
 export default function PerformanceDashboard() {
@@ -36,6 +47,8 @@ export default function PerformanceDashboard() {
   const [trends, setTrends] = useState(calculateTrends(30));
   const [forecast, setForecast] = useState(generateForecast());
   const [sustainability, setSustainability] = useState(calculateSustainability(30));
+  const [permits, setPermits] = useState<Permit[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   
   // Scenario modeling state
   const [fuelCostChange, setFuelCostChange] = useState(0);
@@ -48,6 +61,10 @@ export default function PerformanceDashboard() {
   }));
 
   useEffect(() => {
+    initializePermitData();
+    setPermits(municipalityStorage.getPermits());
+    setLeads(leadStorage.getLeads());
+    
     const interval = setInterval(() => {
       setKpis(calculateExecutiveKPIs(7));
       setProfitability(calculateProfitability());
@@ -58,6 +75,27 @@ export default function PerformanceDashboard() {
 
     return () => clearInterval(interval);
   }, []);
+  
+  // Permits & Leads metrics
+  const permitMetrics = useMemo(() => {
+    const earthworkPermits = permits.filter(p => p.estimatedEarthworkFlag === 'yes');
+    const highScorePermits = permits.filter(p => calculateEarthworkScore(p).score >= 70);
+    const avgScore = permits.length > 0 
+      ? Math.round(permits.reduce((sum, p) => sum + calculateEarthworkScore(p).score, 0) / permits.length)
+      : 0;
+    const convertedLeads = leads.filter(l => l.leadStatus === 'converted_to_job');
+    const conversionRate = leads.length > 0 ? Math.round((convertedLeads.length / leads.length) * 100) : 0;
+    
+    return {
+      totalPermits: permits.length,
+      earthworkPermits: earthworkPermits.length,
+      highScorePermits: highScorePermits.length,
+      avgScore,
+      totalLeads: leads.length,
+      convertedLeads: convertedLeads.length,
+      conversionRate
+    };
+  }, [permits, leads]);
 
   const handleScenarioChange = () => {
     const result = runScenarioSimulation({
@@ -133,6 +171,61 @@ export default function PerformanceDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Permits & Leads Pipeline */}
+        <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CardTitle>Sales Pipeline Intelligence</CardTitle>
+              <AIBadge size="sm" variant="minimal" />
+            </div>
+            <Link to="/permits-leads">
+              <Button variant="outline" size="sm" className="gap-2">
+                View Permits & Leads
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              <div className="text-center p-3 bg-background/50 rounded-lg">
+                <FileText className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+                <div className="text-2xl font-bold">{permitMetrics.totalPermits}</div>
+                <p className="text-xs text-muted-foreground">Total Permits</p>
+              </div>
+              <div className="text-center p-3 bg-background/50 rounded-lg">
+                <FileText className="h-5 w-5 text-status-approved mx-auto mb-1" />
+                <div className="text-2xl font-bold text-status-approved">{permitMetrics.earthworkPermits}</div>
+                <p className="text-xs text-muted-foreground">Earthwork Permits</p>
+              </div>
+              <div className="text-center p-3 bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg border border-primary/20">
+                <Sparkles className="h-5 w-5 text-primary mx-auto mb-1" />
+                <div className="text-2xl font-bold text-primary">{permitMetrics.highScorePermits}</div>
+                <p className="text-xs text-muted-foreground">High AI Score (≥70%)</p>
+              </div>
+              <div className="text-center p-3 bg-background/50 rounded-lg">
+                <Target className="h-5 w-5 text-accent mx-auto mb-1" />
+                <div className="text-2xl font-bold">{permitMetrics.avgScore}%</div>
+                <p className="text-xs text-muted-foreground">Avg AI Score</p>
+              </div>
+              <div className="text-center p-3 bg-background/50 rounded-lg">
+                <Briefcase className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+                <div className="text-2xl font-bold">{permitMetrics.totalLeads}</div>
+                <p className="text-xs text-muted-foreground">Total Leads</p>
+              </div>
+              <div className="text-center p-3 bg-background/50 rounded-lg">
+                <Briefcase className="h-5 w-5 text-status-approved mx-auto mb-1" />
+                <div className="text-2xl font-bold text-status-approved">{permitMetrics.convertedLeads}</div>
+                <p className="text-xs text-muted-foreground">Converted</p>
+              </div>
+              <div className="text-center p-3 bg-background/50 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                <div className="text-2xl font-bold text-green-600">{permitMetrics.conversionRate}%</div>
+                <p className="text-xs text-muted-foreground">Conversion Rate</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Sustainability Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
