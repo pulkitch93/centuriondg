@@ -8,6 +8,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Marketing from "./pages/Marketing";
 import Sites from "./pages/Sites";
+import SiteDetail from "./pages/SiteDetail";
+import MatchDetail from "./pages/MatchDetail";
 import PermitIntegrations from "./pages/PermitIntegrations";
 import PermitsLeads from "./pages/PermitsLeads";
 import NewSite from "./pages/NewSite";
@@ -40,6 +42,8 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/sites" element={<Sites />} />
               <Route path="/sites/new" element={<NewSite />} />
+              <Route path="/sites/:id" element={<SiteDetail />} />
+              <Route path="/matches/:id" element={<MatchDetail />} />
               <Route path="/scheduler" element={<Scheduler />} />
               <Route path="/schedule/:id" element={<ScheduleDetail />} />
               <Route path="/materials" element={<MaterialsHub />} />
