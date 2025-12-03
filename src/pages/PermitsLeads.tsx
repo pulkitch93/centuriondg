@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { Permit } from '@/types/municipality';
 import { Lead, PermitLeadStatus, LeadStatus } from '@/types/lead';
@@ -16,13 +17,15 @@ import { municipalityStorage } from '@/lib/municipalityStorage';
 import { leadStorage } from '@/lib/leadStorage';
 import { storage } from '@/lib/storage';
 import { initializePermitData } from '@/lib/initPermitData';
+import { calculateEarthworkScore, getScoreColor, getScoreBgColor, PermitScore } from '@/lib/permitScoring';
 import { PermitDetailsDrawer } from '@/components/PermitDetailsDrawer';
 import { LeadFormDialog } from '@/components/LeadFormDialog';
 import { CreateJobDialog } from '@/components/CreateJobDialog';
+import { AIBadge } from '@/components/ui/ai-badge';
 import { format } from 'date-fns';
 import { 
   ArrowLeft, FileText, Briefcase, MoreHorizontal, Eye, Plus, 
-  ArrowRight, Search, Filter, Building2, CheckCircle2, Clock
+  ArrowRight, Search, Building2, CheckCircle2, Sparkles, Clock
 } from 'lucide-react';
 
 export default function PermitsLeads() {
@@ -381,6 +384,12 @@ export default function PermitsLeads() {
                           <TableHead>Status</TableHead>
                           <TableHead>Start Date</TableHead>
                           <TableHead>Earthwork</TableHead>
+                          <TableHead>
+                            <div className="flex items-center gap-1.5">
+                              <Sparkles className="h-3.5 w-3.5 text-primary" />
+                              AI Score
+                            </div>
+                          </TableHead>
                           <TableHead>Lead Status</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -388,6 +397,7 @@ export default function PermitsLeads() {
                       <TableBody>
                         {filteredPermits.map((permit) => {
                           const leadStatus = getPermitLeadStatus(permit.id);
+                          const aiScore = calculateEarthworkScore(permit);
                           return (
                             <TableRow key={permit.id}>
                               <TableCell className="font-mono text-xs">{permit.externalPermitId}</TableCell>
@@ -404,6 +414,32 @@ export default function PermitsLeads() {
                                   : '-'}
                               </TableCell>
                               <TableCell>{getEarthworkBadge(permit.estimatedEarthworkFlag)}</TableCell>
+                              <TableCell>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold ${getScoreBgColor(aiScore.score)} ${getScoreColor(aiScore.score)}`}>
+                                        <Sparkles className="h-3 w-3" />
+                                        {aiScore.score}%
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="left" className="max-w-xs">
+                                      <div className="space-y-2">
+                                        <p className="font-medium">Earthwork Likelihood: {aiScore.score}%</p>
+                                        <p className="text-xs text-muted-foreground">Confidence: {aiScore.confidence}</p>
+                                        <div className="text-xs">
+                                          <p className="font-medium mb-1">Factors:</p>
+                                          <ul className="list-disc list-inside space-y-0.5">
+                                            {aiScore.factors.map((factor, i) => (
+                                              <li key={i}>{factor}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </TableCell>
                               <TableCell>{getLeadStatusBadge(leadStatus)}</TableCell>
                               <TableCell className="text-right">
                                 <DropdownMenu>
