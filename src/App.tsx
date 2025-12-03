@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Marketing from "./pages/Marketing";
 import Sites from "./pages/Sites";
 import PermitIntegrations from "./pages/PermitIntegrations";
+import PermitsLeads from "./pages/PermitsLeads";
 import NewSite from "./pages/NewSite";
 import Scheduler from "./pages/Scheduler";
 import ScheduleDetail from "./pages/ScheduleDetail";
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/ai-assistant" element={<AIAssistant />} />
               <Route path="/compliance" element={<ComplianceCenter />} />
               <Route path="/permit-integrations" element={<PermitIntegrations />} />
+              <Route path="/permits-leads" element={<PermitsLeads />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
