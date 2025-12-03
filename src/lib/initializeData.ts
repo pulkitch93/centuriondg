@@ -9,6 +9,7 @@ import { dispatchStorage } from './dispatchStorage';
 import { initializeComplianceData } from './initComplianceData';
 import { initializeOperationsData } from './initOperationsData';
 import { initializeHistoricalData } from './initHistoricalData';
+import { initializePermitData } from './initPermitData';
 
 function initializeDriversAndDispatches() {
   // Initialize drivers if none exist
@@ -307,11 +308,12 @@ export function initializeSampleData() {
   const hasInitializedSites = existingSites.length > 0;
   
   if (hasInitializedSites) {
-    // Still initialize drivers, dispatches, compliance, operations, and historical data even if sites exist
+    // Still initialize drivers, dispatches, compliance, operations, historical, and permit data even if sites exist
     initializeDriversAndDispatches();
     initializeComplianceData();
     initializeOperationsData();
     initializeHistoricalData();
+    initializePermitData();
     return;
   }
 
@@ -1384,4 +1386,7 @@ export function initializeSampleData() {
   
   // Initialize historical data for performance metrics
   initializeHistoricalData();
+  
+  // Initialize permit and lead data
+  initializePermitData();
 }
