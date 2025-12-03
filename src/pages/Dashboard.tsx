@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AIBadge } from '@/components/ui/ai-badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { storage } from '@/lib/storage';
 import { schedulerStorage } from '@/lib/schedulerStorage';
 import { dispatchStorage } from '@/lib/dispatchStorage';
@@ -53,45 +54,91 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <header className="border-b bg-card shadow-subtle">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="hover:opacity-80 transition-opacity">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Centurion DG Platform</h1>
-                <p className="text-sm text-muted-foreground">Intelligent Earthwork Logistics</p>
+    <TooltipProvider>
+      <div className="min-h-screen bg-muted/30">
+        <header className="border-b bg-card shadow-subtle">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link to="/" className="hover:opacity-80 transition-opacity">
+                    <div>
+                      <h1 className="text-2xl font-bold text-foreground">Centurion DG Platform</h1>
+                      <p className="text-sm text-muted-foreground">Intelligent Earthwork Logistics</p>
+                    </div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>Go to marketing landing page</TooltipContent>
+              </Tooltip>
+              <div className="flex gap-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/operations">
+                      <Button variant="default" className="bg-primary">Operations Center</Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Real-time job monitoring & live map</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/materials">
+                      <Button variant="outline">Materials Hub</Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>AI-powered soil matching & sourcing</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/haulers">
+                      <Button variant="outline">Hauler Network</Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Manage trucking partners & drivers</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/dispatches">
+                      <Button variant="outline">Dispatches</Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Track dispatch tickets & deliveries</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/scheduler">
+                      <Button variant="outline">Scheduler</Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>AI-optimized hauling schedules</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/compliance">
+                      <Button variant="outline">Compliance</Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Document management & audit trails</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/permits-leads">
+                      <Button variant="outline">Permits & Leads</Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Convert permits to sales leads</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/sites">
+                      <Button variant="outline">Job Board</Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Manage export/import sites & AI matches</TooltipContent>
+                </Tooltip>
               </div>
-            </Link>
-            <div className="flex gap-3">
-              <Link to="/operations">
-                <Button variant="default" className="bg-primary">Operations Center</Button>
-              </Link>
-              <Link to="/materials">
-                <Button variant="outline">Materials Hub</Button>
-              </Link>
-              <Link to="/haulers">
-                <Button variant="outline">Hauler Network</Button>
-              </Link>
-              <Link to="/dispatches">
-                <Button variant="outline">Dispatches</Button>
-              </Link>
-              <Link to="/scheduler">
-                <Button variant="outline">Scheduler</Button>
-              </Link>
-              <Link to="/compliance">
-                <Button variant="outline">Compliance</Button>
-              </Link>
-              <Link to="/permits-leads">
-                <Button variant="outline">Permits & Leads</Button>
-              </Link>
-              <Link to="/sites">
-                <Button variant="outline">Job Board</Button>
-              </Link>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       <main className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -244,7 +291,8 @@ export default function Dashboard() {
             </Link>
           </Card>
         </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </TooltipProvider>
   );
 }

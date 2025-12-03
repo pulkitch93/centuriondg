@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';
 import { dispatchStorage } from '@/lib/dispatchStorage';
 import { schedulerStorage } from '@/lib/schedulerStorage';
@@ -129,29 +130,45 @@ export default function Dispatches() {
   const completedTickets = tickets.filter(t => t.status === 'delivered');
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <PageHeader 
-          title="Dispatch Management" 
-          description="Track and manage hauling operations"
-          actions={
-            <>
-              <Button variant="outline" onClick={() => navigate('/performance')}>
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Performance
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/live-tracking')}>
-                <MapPin className="mr-2 h-4 w-4" />
-                Live GPS Tracking
-              </Button>
-              <Button onClick={() => setIsCreateOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Dispatch
-              </Button>
-            </>
-          }
-        />
+    <TooltipProvider>
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <PageHeader 
+            title="Dispatch Management" 
+            description="Track and manage hauling operations"
+            actions={
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" onClick={() => navigate('/performance')}>
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      Performance
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>View KPIs & profitability metrics</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" onClick={() => navigate('/live-tracking')}>
+                      <MapPin className="mr-2 h-4 w-4" />
+                      Live GPS Tracking
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Real-time truck GPS locations</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={() => setIsCreateOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Dispatch
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Assign a new haul to a driver</TooltipContent>
+                </Tooltip>
+              </>
+            }
+          />
 
         {/* Create Dialog */}
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -424,5 +441,6 @@ export default function Dispatches() {
         </Tabs>
       </div>
     </div>
+    </TooltipProvider>
   );
 }

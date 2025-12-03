@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   AlertTriangle, CheckCircle, Clock, MapPin, Truck, Send, 
   TrendingUp, Activity, AlertCircle, Radio, MessageSquare 
@@ -200,52 +201,58 @@ export default function OperationsCenter() {
   const criticalAlerts = activeAlerts.filter(a => a.severity === 'critical' || a.severity === 'high');
 
   return (
-    <div className="min-h-screen bg-background">
-      {showTokenInput && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Mapbox Token Required</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Get your free token at{' '}
-                <a href="https://account.mapbox.com/access-tokens/" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                  mapbox.com
-                </a>
-              </p>
-              <input
-                type="text"
-                value={mapboxToken}
-                onChange={(e) => setMapboxToken(e.target.value)}
-                placeholder="pk.eyJ1..."
-                className="w-full px-3 py-2 border rounded-md bg-background"
-              />
-              <div className="flex gap-2">
-                <Button onClick={handleSaveToken} className="flex-1">Save Token</Button>
-                <Button variant="outline" onClick={() => navigate('/dashboard')} className="flex-1">Cancel</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <div className="h-screen flex flex-col">
-        {/* Header */}
-        <div className="bg-card border-b p-4">
-          <div className="max-w-[2000px] mx-auto">
-            <PageHeader
-              title="Operations Control Center"
-              description="Real-time command & monitoring"
-              actions={
-                <Button variant="outline" onClick={() => setMessageDialog(true)}>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Message Haulers
-                </Button>
-              }
-            />
+    <TooltipProvider>
+      <div className="min-h-screen bg-background">
+        {showTokenInput && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle>Mapbox Token Required</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Get your free token at{' '}
+                  <a href="https://account.mapbox.com/access-tokens/" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                    mapbox.com
+                  </a>
+                </p>
+                <input
+                  type="text"
+                  value={mapboxToken}
+                  onChange={(e) => setMapboxToken(e.target.value)}
+                  placeholder="pk.eyJ1..."
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                />
+                <div className="flex gap-2">
+                  <Button onClick={handleSaveToken} className="flex-1">Save Token</Button>
+                  <Button variant="outline" onClick={() => navigate('/dashboard')} className="flex-1">Cancel</Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </div>
+        )}
+
+        <div className="h-screen flex flex-col">
+          {/* Header */}
+          <div className="bg-card border-b p-4">
+            <div className="max-w-[2000px] mx-auto">
+              <PageHeader
+                title="Operations Control Center"
+                description="Real-time command & monitoring"
+                actions={
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" onClick={() => setMessageDialog(true)}>
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Message Haulers
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Send priority messages to trucking partners</TooltipContent>
+                  </Tooltip>
+                }
+              />
+            </div>
+          </div>
 
         {/* Message Dialog */}
         <Dialog open={messageDialog} onOpenChange={setMessageDialog}>
@@ -501,15 +508,16 @@ export default function OperationsCenter() {
                 {alerts.filter(a => !a.resolved).length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <CheckCircle className="h-12 w-12 mx-auto mb-3 text-green-600" />
-                    <p>No active alerts</p>
-                    <p className="text-sm">All systems operating normally</p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </div>
+                  <p>No active alerts</p>
+                  <p className="text-sm">All systems operating normally</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
+  </div>
+  </TooltipProvider>
   );
 }
