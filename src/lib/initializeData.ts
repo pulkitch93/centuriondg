@@ -11,9 +11,25 @@ import { initializeOperationsData } from './initOperationsData';
 import { initializeHistoricalData } from './initHistoricalData';
 import { initializePermitData } from './initPermitData';
 
+const DISPATCH_DATA_VERSION = 'v3'; // Increment to force refresh
+
 function initializeDriversAndDispatches() {
-  // Initialize drivers if none exist
-  if (dispatchStorage.getDrivers().length === 0) {
+  const existingTickets = dispatchStorage.getDispatchTickets();
+  const dataVersion = localStorage.getItem('dispatch_data_version_main');
+  
+  // Check recent volume
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const recentDeliveries = existingTickets.filter(t => 
+    t.deliveredAt && new Date(t.deliveredAt) >= sevenDaysAgo
+  );
+  const recentVolume = recentDeliveries.reduce((sum, t) => sum + (t.actualVolume || t.volume), 0);
+  
+  // Force refresh if version changed or volume is too low
+  const needsRefresh = dataVersion !== DISPATCH_DATA_VERSION || recentVolume < 1000;
+  
+  // Initialize drivers if none exist or refresh needed
+  if (dispatchStorage.getDrivers().length === 0 || needsRefresh) {
     const drivers: Driver[] = [
       {
         id: 'driver-1',
@@ -123,10 +139,11 @@ function initializeDriversAndDispatches() {
     dispatchStorage.setDrivers(drivers);
   }
 
-  // Initialize dispatch tickets if none exist
-  if (dispatchStorage.getDispatchTickets().length === 0) {
-    const now = new Date();
+  // Initialize dispatch tickets with meaningful volumes
+  if (needsRefresh) {
+    localStorage.setItem('dispatch_data_version_main', DISPATCH_DATA_VERSION);
     const tickets: DispatchTicket[] = [
+      // Day 1 deliveries
       {
         id: 'T-9001',
         scheduleId: 'DS-5001',
@@ -134,22 +151,23 @@ function initializeDriversAndDispatches() {
         haulerCompany: 'Rapid Logistics',
         exportSiteId: 'EX-103',
         importSiteId: 'IM-202',
-        volume: 18,
+        volume: 185,
         status: 'delivered',
-        createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        acceptedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000).toISOString(),
-        startedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(),
-        loadedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 75 * 60 * 1000).toISOString(),
-        deliveredAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 135 * 60 * 1000).toISOString(),
+        createdAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000 + 15 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000 + 75 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000 + 135 * 60 * 1000).toISOString(),
         loadPhotoUrl: 'uploaded',
         unloadPhotoUrl: 'uploaded',
         digitalSignature: 'signature-9001',
-        actualVolume: 18,
+        actualVolume: 185,
         customerRating: 5,
-        fuelUsed: 8.5,
+        fuelUsed: 85,
         gpsTrack: [],
         issues: [],
       },
+      // Day 2 deliveries
       {
         id: 'T-9002',
         scheduleId: 'DS-5002',
@@ -157,19 +175,22 @@ function initializeDriversAndDispatches() {
         haulerCompany: 'GreenHaul Transport',
         exportSiteId: 'EX-101',
         importSiteId: 'IM-201',
-        volume: 20,
-        status: 'en-route-delivery',
-        createdAt: new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString(),
-        acceptedAt: new Date(now.getTime() - 3 * 60 * 60 * 1000 + 10 * 60 * 1000).toISOString(),
-        startedAt: new Date(now.getTime() - 2.5 * 60 * 60 * 1000).toISOString(),
-        loadedAt: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
+        volume: 210,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 10 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 80 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 140 * 60 * 1000).toISOString(),
         loadPhotoUrl: 'uploaded',
-        customerRating: 4,
-        fuelUsed: 10.2,
+        unloadPhotoUrl: 'uploaded',
+        actualVolume: 210,
+        customerRating: 4.5,
+        fuelUsed: 95,
         gpsTrack: [],
-        eta: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
         issues: [],
       },
+      // Day 3 deliveries
       {
         id: 'T-9003',
         scheduleId: 'DS-5003',
@@ -177,28 +198,22 @@ function initializeDriversAndDispatches() {
         haulerCompany: 'Budget Movers',
         exportSiteId: 'EX-102',
         importSiteId: 'IM-203',
-        volume: 15,
+        volume: 165,
         status: 'delivered',
-        createdAt: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
-        acceptedAt: new Date(now.getTime() - 24 * 60 * 60 * 1000 + 20 * 60 * 1000).toISOString(),
-        startedAt: new Date(now.getTime() - 24 * 60 * 60 * 1000 + 45 * 60 * 1000).toISOString(),
-        loadedAt: new Date(now.getTime() - 24 * 60 * 60 * 1000 + 90 * 60 * 1000).toISOString(),
-        deliveredAt: new Date(now.getTime() - 24 * 60 * 60 * 1000 + 150 * 60 * 1000).toISOString(),
+        createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 + 20 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 + 45 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 + 90 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 + 150 * 60 * 1000).toISOString(),
         loadPhotoUrl: 'uploaded',
         unloadPhotoUrl: 'uploaded',
-        customerRating: 3.5,
-        fuelUsed: 7.8,
+        actualVolume: 165,
+        customerRating: 4.2,
+        fuelUsed: 78,
         gpsTrack: [],
-        issues: [
-          {
-            id: 'issue-1',
-            type: 'delay',
-            description: 'Traffic delay on I-77',
-            timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000 + 100 * 60 * 1000).toISOString(),
-            resolved: true,
-          },
-        ],
+        issues: [],
       },
+      // Day 4 deliveries
       {
         id: 'T-9004',
         scheduleId: 'DS-5001',
@@ -206,22 +221,23 @@ function initializeDriversAndDispatches() {
         haulerCompany: 'Premier Fleet',
         exportSiteId: 'EX-101',
         importSiteId: 'IM-202',
-        volume: 25,
+        volume: 250,
         status: 'delivered',
-        createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        acceptedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 + 10 * 60 * 1000).toISOString(),
-        startedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 + 25 * 60 * 1000).toISOString(),
-        loadedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 + 70 * 60 * 1000).toISOString(),
-        deliveredAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 + 140 * 60 * 1000).toISOString(),
+        createdAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000 + 10 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000 + 25 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000 + 70 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000 + 140 * 60 * 1000).toISOString(),
         loadPhotoUrl: 'uploaded',
         unloadPhotoUrl: 'uploaded',
         digitalSignature: 'signature-9004',
-        actualVolume: 25,
-        customerRating: 4.5,
-        fuelUsed: 12.3,
+        actualVolume: 250,
+        customerRating: 4.8,
+        fuelUsed: 115,
         gpsTrack: [],
         issues: [],
       },
+      // Day 5 deliveries
       {
         id: 'T-9005',
         scheduleId: 'DS-5002',
@@ -229,7 +245,208 @@ function initializeDriversAndDispatches() {
         haulerCompany: 'Rapid Logistics',
         exportSiteId: 'EX-103',
         importSiteId: 'IM-201',
-        volume: 18,
+        volume: 195,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 12 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 28 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 75 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 135 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        digitalSignature: 'signature-9005',
+        actualVolume: 195,
+        customerRating: 4.9,
+        fuelUsed: 92,
+        gpsTrack: [],
+        issues: [],
+      },
+      // Day 6 deliveries
+      {
+        id: 'T-9006',
+        scheduleId: 'DS-5003',
+        driverId: 'driver-6',
+        haulerCompany: 'GreenHaul Transport',
+        exportSiteId: 'EX-104',
+        importSiteId: 'IM-204',
+        volume: 220,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 + 14 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 + 32 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 + 82 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 + 142 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        actualVolume: 220,
+        customerRating: 5,
+        fuelUsed: 108,
+        gpsTrack: [],
+        issues: [],
+      },
+      // Day 7 deliveries
+      {
+        id: 'T-9007',
+        scheduleId: 'DS-5001',
+        driverId: 'driver-7',
+        haulerCompany: 'Budget Movers',
+        exportSiteId: 'EX-105',
+        importSiteId: 'IM-205',
+        volume: 175,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000 + 18 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000 + 40 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000 + 88 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000 + 148 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        actualVolume: 175,
+        customerRating: 4.3,
+        fuelUsed: 85,
+        gpsTrack: [],
+        issues: [],
+      },
+      // Additional deliveries within 7 days
+      {
+        id: 'T-9008',
+        scheduleId: 'DS-5002',
+        driverId: 'driver-8',
+        haulerCompany: 'Premier Fleet',
+        exportSiteId: 'EX-101',
+        importSiteId: 'IM-203',
+        volume: 230,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 - 4 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 - 4 * 60 * 60 * 1000 + 8 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 - 4 * 60 * 60 * 1000 + 22 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 - 4 * 60 * 60 * 1000 + 68 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 - 4 * 60 * 60 * 1000 + 128 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        digitalSignature: 'signature-9008',
+        actualVolume: 230,
+        customerRating: 4.7,
+        fuelUsed: 112,
+        gpsTrack: [],
+        issues: [],
+      },
+      {
+        id: 'T-9009',
+        scheduleId: 'DS-5003',
+        driverId: 'driver-1',
+        haulerCompany: 'Rapid Logistics',
+        exportSiteId: 'EX-102',
+        importSiteId: 'IM-201',
+        volume: 180,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 - 6 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 - 6 * 60 * 60 * 1000 + 14 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 - 6 * 60 * 60 * 1000 + 32 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 - 6 * 60 * 60 * 1000 + 77 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000 - 6 * 60 * 60 * 1000 + 137 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        actualVolume: 180,
+        customerRating: 4.6,
+        fuelUsed: 88,
+        gpsTrack: [],
+        issues: [],
+      },
+      {
+        id: 'T-9010',
+        scheduleId: 'DS-5001',
+        driverId: 'driver-2',
+        haulerCompany: 'GreenHaul Transport',
+        exportSiteId: 'EX-103',
+        importSiteId: 'IM-204',
+        volume: 200,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000 + 11 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000 + 28 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000 + 73 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000 - 3 * 60 * 60 * 1000 + 133 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        digitalSignature: 'signature-9010',
+        actualVolume: 200,
+        customerRating: 4.4,
+        fuelUsed: 98,
+        gpsTrack: [],
+        issues: [],
+      },
+      {
+        id: 'T-9011',
+        scheduleId: 'DS-5002',
+        driverId: 'driver-3',
+        haulerCompany: 'Budget Movers',
+        exportSiteId: 'EX-104',
+        importSiteId: 'IM-202',
+        volume: 190,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 - 5 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 - 5 * 60 * 60 * 1000 + 16 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 - 5 * 60 * 60 * 1000 + 38 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 - 5 * 60 * 60 * 1000 + 82 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 - 5 * 60 * 60 * 1000 + 142 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        actualVolume: 190,
+        customerRating: 4.1,
+        fuelUsed: 95,
+        gpsTrack: [],
+        issues: [],
+      },
+      {
+        id: 'T-9012',
+        scheduleId: 'DS-5003',
+        driverId: 'driver-4',
+        haulerCompany: 'Premier Fleet',
+        exportSiteId: 'EX-105',
+        importSiteId: 'IM-201',
+        volume: 240,
+        status: 'delivered',
+        createdAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 - 2 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 - 2 * 60 * 60 * 1000 + 9 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 - 2 * 60 * 60 * 1000 + 24 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 - 2 * 60 * 60 * 1000 + 69 * 60 * 1000).toISOString(),
+        deliveredAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 - 2 * 60 * 60 * 1000 + 129 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        unloadPhotoUrl: 'uploaded',
+        digitalSignature: 'signature-9012',
+        actualVolume: 240,
+        customerRating: 5,
+        fuelUsed: 118,
+        gpsTrack: [],
+        issues: [],
+      },
+      // Active/in-progress tickets
+      {
+        id: 'T-9013',
+        scheduleId: 'DS-5001',
+        driverId: 'driver-5',
+        haulerCompany: 'Rapid Logistics',
+        exportSiteId: 'EX-101',
+        importSiteId: 'IM-203',
+        volume: 175,
+        status: 'en-route-delivery',
+        createdAt: new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString(),
+        acceptedAt: new Date(now.getTime() - 3 * 60 * 60 * 1000 + 10 * 60 * 1000).toISOString(),
+        startedAt: new Date(now.getTime() - 2.5 * 60 * 60 * 1000).toISOString(),
+        loadedAt: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
+        loadPhotoUrl: 'uploaded',
+        gpsTrack: [],
+        eta: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
+        issues: [],
+      },
+      {
+        id: 'T-9014',
+        driverId: 'driver-6',
+        haulerCompany: 'GreenHaul Transport',
+        exportSiteId: 'EX-102',
+        importSiteId: 'IM-204',
+        volume: 195,
         status: 'loading',
         createdAt: new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString(),
         acceptedAt: new Date(now.getTime() - 50 * 60 * 1000).toISOString(),
@@ -239,60 +456,14 @@ function initializeDriversAndDispatches() {
         issues: [],
       },
       {
-        id: 'T-9006',
+        id: 'T-9015',
         driverId: 'driver-7',
         haulerCompany: 'Budget Movers',
-        exportSiteId: 'EX-101',
-        importSiteId: 'IM-203',
-        volume: 16,
+        exportSiteId: 'EX-103',
+        importSiteId: 'IM-205',
+        volume: 165,
         status: 'pending',
         createdAt: new Date(now.getTime() - 15 * 60 * 1000).toISOString(),
-        gpsTrack: [],
-        issues: [],
-      },
-      {
-        id: 'T-9007',
-        scheduleId: 'DS-5003',
-        driverId: 'driver-8',
-        haulerCompany: 'Premier Fleet',
-        exportSiteId: 'EX-102',
-        importSiteId: 'IM-202',
-        volume: 22,
-        status: 'delivered',
-        createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        acceptedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 8 * 60 * 1000).toISOString(),
-        startedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 20 * 60 * 1000).toISOString(),
-        loadedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 65 * 60 * 1000).toISOString(),
-        deliveredAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000 + 125 * 60 * 1000).toISOString(),
-        loadPhotoUrl: 'uploaded',
-        unloadPhotoUrl: 'uploaded',
-        digitalSignature: 'signature-9007',
-        actualVolume: 22,
-        customerRating: 5,
-        fuelUsed: 11.5,
-        gpsTrack: [],
-        issues: [],
-      },
-      {
-        id: 'T-9008',
-        scheduleId: 'DS-5001',
-        driverId: 'driver-1',
-        haulerCompany: 'Rapid Logistics',
-        exportSiteId: 'EX-103',
-        importSiteId: 'IM-201',
-        volume: 18,
-        status: 'delivered',
-        createdAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-        acceptedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 + 12 * 60 * 1000).toISOString(),
-        startedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 + 28 * 60 * 1000).toISOString(),
-        loadedAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 + 72 * 60 * 1000).toISOString(),
-        deliveredAt: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 + 132 * 60 * 1000).toISOString(),
-        loadPhotoUrl: 'uploaded',
-        unloadPhotoUrl: 'uploaded',
-        digitalSignature: 'signature-9008',
-        actualVolume: 18,
-        customerRating: 4.8,
-        fuelUsed: 9.1,
         gpsTrack: [],
         issues: [],
       },
@@ -305,15 +476,85 @@ function initializeDriversAndDispatches() {
 export function initializeSampleData() {
   // Check if data already exists
   const existingSites = storage.getSites();
+  const existingMatches = storage.getMatches();
   const hasInitializedSites = existingSites.length > 0;
+  const hasApprovedMatches = existingMatches.filter(m => m.status === 'approved').length >= 4;
+  
+  // Always initialize drivers, dispatches, compliance, operations, historical, and permit data
+  initializeDriversAndDispatches();
+  initializeComplianceData();
+  initializeOperationsData();
+  initializeHistoricalData();
+  initializePermitData();
+  
+  // Ensure approved matches exist for dashboard metrics
+  if (!hasApprovedMatches) {
+    const sampleMatches: Match[] = [
+      {
+        id: 'match-103-202',
+        exportSiteId: 'EX-103',
+        importSiteId: 'IM-202',
+        score: 96,
+        distance: 17,
+        costSavings: 81600,
+        carbonReduction: 4080,
+        reasons: ['Perfect match - clean fill and high volume fit', 'Excellent proximity for cost efficiency'],
+        status: 'approved',
+        createdAt: new Date('2025-02-05').toISOString(),
+      },
+      {
+        id: 'match-101-201',
+        exportSiteId: 'EX-101',
+        importSiteId: 'IM-201',
+        score: 91,
+        distance: 12,
+        costSavings: 38400,
+        carbonReduction: 1920,
+        reasons: ['Clay acceptable for structural after compaction', 'Excellent proximity'],
+        status: 'approved',
+        createdAt: new Date('2025-02-05').toISOString(),
+      },
+      {
+        id: 'match-104-204',
+        exportSiteId: 'EX-104',
+        importSiteId: 'IM-204',
+        score: 88,
+        distance: 15,
+        costSavings: 45200,
+        carbonReduction: 2260,
+        reasons: ['Excellent soil type match: clay', 'Great volume compatibility'],
+        status: 'approved',
+        createdAt: new Date('2025-02-06').toISOString(),
+      },
+      {
+        id: 'match-105-205',
+        exportSiteId: 'EX-105',
+        importSiteId: 'IM-205',
+        score: 83,
+        distance: 19,
+        costSavings: 52800,
+        carbonReduction: 2640,
+        reasons: ['Good soil type match: loam', 'High volume compatibility'],
+        status: 'approved',
+        createdAt: new Date('2025-02-06').toISOString(),
+      },
+      {
+        id: 'match-102-203',
+        exportSiteId: 'EX-102',
+        importSiteId: 'IM-203',
+        score: 65,
+        distance: 22,
+        costSavings: 31680,
+        carbonReduction: 1584,
+        reasons: ['Contamination risk flagged - requires environmental review'],
+        status: 'suggested',
+        createdAt: new Date('2025-02-05').toISOString(),
+      },
+    ];
+    storage.setMatches(sampleMatches);
+  }
   
   if (hasInitializedSites) {
-    // Still initialize drivers, dispatches, compliance, operations, historical, and permit data even if sites exist
-    initializeDriversAndDispatches();
-    initializeComplianceData();
-    initializeOperationsData();
-    initializeHistoricalData();
-    initializePermitData();
     return;
   }
 
