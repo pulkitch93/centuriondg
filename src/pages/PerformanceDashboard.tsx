@@ -186,7 +186,7 @@ export default function PerformanceDashboard() {
               </Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
               <div className="text-center p-3 bg-background/50 rounded-lg">
                 <FileText className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
@@ -222,6 +222,72 @@ export default function PerformanceDashboard() {
                 <TrendingUp className="h-5 w-5 text-green-600 mx-auto mb-1" />
                 <div className="text-2xl font-bold text-green-600">{permitMetrics.conversionRate}%</div>
                 <p className="text-xs text-muted-foreground">Conversion Rate</p>
+              </div>
+            </div>
+
+            {/* Conversion Funnel */}
+            <div className="pt-4 border-t">
+              <h4 className="text-sm font-medium text-muted-foreground mb-4">Conversion Funnel</h4>
+              <div className="flex flex-col items-center gap-2">
+                {/* Permits Stage */}
+                <div className="relative w-full max-w-2xl">
+                  <div 
+                    className="h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-t-lg flex items-center justify-between px-6 text-white"
+                    style={{ width: '100%' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      <span className="font-medium">Earthwork Permits</span>
+                    </div>
+                    <span className="text-xl font-bold">{permitMetrics.earthworkPermits}</span>
+                  </div>
+                </div>
+                
+                {/* Arrow */}
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="h-0.5 w-8 bg-muted-foreground/30" />
+                  <span className="text-xs">
+                    {permitMetrics.earthworkPermits > 0 
+                      ? Math.round((permitMetrics.totalLeads / permitMetrics.earthworkPermits) * 100) 
+                      : 0}% converted to leads
+                  </span>
+                  <div className="h-0.5 w-8 bg-muted-foreground/30" />
+                </div>
+
+                {/* Leads Stage */}
+                <div className="relative w-full max-w-2xl flex justify-center">
+                  <div 
+                    className="h-14 bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg flex items-center justify-between px-6 text-white"
+                    style={{ width: `${Math.max(40, permitMetrics.earthworkPermits > 0 ? (permitMetrics.totalLeads / permitMetrics.earthworkPermits) * 100 : 60)}%` }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-5 w-5" />
+                      <span className="font-medium">Leads</span>
+                    </div>
+                    <span className="text-xl font-bold">{permitMetrics.totalLeads}</span>
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="h-0.5 w-8 bg-muted-foreground/30" />
+                  <span className="text-xs">{permitMetrics.conversionRate}% converted to jobs</span>
+                  <div className="h-0.5 w-8 bg-muted-foreground/30" />
+                </div>
+
+                {/* Jobs Stage */}
+                <div className="relative w-full max-w-2xl flex justify-center">
+                  <div 
+                    className="h-14 bg-gradient-to-r from-green-500 to-green-600 rounded-b-lg flex items-center justify-between px-6 text-white"
+                    style={{ width: `${Math.max(25, permitMetrics.totalLeads > 0 ? (permitMetrics.convertedLeads / permitMetrics.totalLeads) * 100 : 30)}%` }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      <span className="font-medium">Jobs</span>
+                    </div>
+                    <span className="text-xl font-bold">{permitMetrics.convertedLeads}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
