@@ -4,8 +4,8 @@
 
 A comprehensive web application for managing earthwork logistics operations, built with React, TypeScript, Vite, Tailwind CSS, and shadcn/ui components.
 
-**URL**: https://lovable.dev/projects/05f7fae6-08c9-4be7-baa9-f2f330ae7980
-
+**Code URL**: https://lovable.dev/projects/05f7fae6-08c9-4be7-baa9-f2f330ae7980
+Application URL: https://centuriondg.lovable.app/
 ---
 
 ## Table of Contents
