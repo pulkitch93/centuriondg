@@ -76,9 +76,6 @@ export default function Dashboard() {
               <Link to="/dispatches">
                 <Button variant="outline">Dispatches</Button>
               </Link>
-              <Link to="/live-tracking">
-                <Button variant="outline">Live Tracking</Button>
-              </Link>
               <Link to="/scheduler">
                 <Button variant="outline">Scheduler</Button>
               </Link>
