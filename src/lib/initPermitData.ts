@@ -4,10 +4,10 @@ import { MunicipalityIntegration } from '@/types/municipality';
 import { municipalityStorage } from './municipalityStorage';
 import { leadStorage } from './leadStorage';
 
-const PERMIT_DATA_INITIALIZED_KEY = 'centurion_permit_data_initialized';
-
 export function initializePermitData() {
-  if (localStorage.getItem(PERMIT_DATA_INITIALIZED_KEY)) {
+  // Only initialize if no permits exist yet (allows sample data on fresh sessions)
+  const existingPermits = municipalityStorage.getPermits();
+  if (existingPermits.length > 0) {
     return;
   }
 
@@ -452,6 +452,4 @@ export function initializePermitData() {
   municipalityStorage.setIntegrations(integrations);
   municipalityStorage.setPermits(allPermits);
   leadStorage.setLeads(sampleLeads);
-
-  localStorage.setItem(PERMIT_DATA_INITIALIZED_KEY, 'true');
 }
