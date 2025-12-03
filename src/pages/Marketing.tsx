@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AIBadge } from '@/components/ui/ai-badge';
+import { ProductTour } from '@/components/ProductTour';
+import { useTour } from '@/hooks/use-tour';
 import { 
   Sparkles, 
   TrendingUp, 
@@ -14,10 +16,22 @@ import {
   Truck,
   Clock,
   DollarSign,
-  Bot
+  Bot,
+  PlayCircle
 } from 'lucide-react';
 
 export default function Marketing() {
+  const {
+    isOpen,
+    currentStep,
+    totalSteps,
+    startTour,
+    closeTour,
+    nextStep,
+    prevStep,
+    goToStep,
+  } = useTour();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -34,17 +48,16 @@ export default function Marketing() {
               Revolutionize your dirt management with AI-powered site matching, 
               real-time tracking, and automated logistics optimization.
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-4 justify-center flex-wrap">
               <Link to="/dashboard">
                 <Button size="lg" className="bg-primary hover:bg-primary/90">
                   Get Started <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
-              <Link to="/operations">
-                <Button size="lg" variant="outline">
-                  View Operations
-                </Button>
-              </Link>
+              <Button size="lg" variant="outline" onClick={startTour} className="gap-2">
+                <PlayCircle className="w-4 h-4" />
+                Take Product Tour
+              </Button>
             </div>
           </div>
         </div>
@@ -244,6 +257,17 @@ export default function Marketing() {
           </Card>
         </div>
       </section>
+
+      {/* Product Tour */}
+      <ProductTour
+        isOpen={isOpen}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        onClose={closeTour}
+        onNext={nextStep}
+        onPrev={prevStep}
+        onGoToStep={goToStep}
+      />
     </div>
   );
 }
