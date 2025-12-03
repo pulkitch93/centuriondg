@@ -15,6 +15,7 @@ import { Site } from '@/types/site';
 import { municipalityStorage } from '@/lib/municipalityStorage';
 import { leadStorage } from '@/lib/leadStorage';
 import { storage } from '@/lib/storage';
+import { initializePermitData } from '@/lib/initPermitData';
 import { PermitDetailsDrawer } from '@/components/PermitDetailsDrawer';
 import { LeadFormDialog } from '@/components/LeadFormDialog';
 import { CreateJobDialog } from '@/components/CreateJobDialog';
@@ -50,6 +51,8 @@ export default function PermitsLeads() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Initialize sample permit data if none exists
+    initializePermitData();
     loadData();
   }, []);
 
