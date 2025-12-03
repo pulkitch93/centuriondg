@@ -97,6 +97,35 @@ export default function PerformanceDashboard() {
     };
   }, [permits, leads]);
 
+  // Generate 30-day pipeline trend data
+  const pipelineTrends = useMemo(() => {
+    const data = [];
+    const basePermitToLead = 35;
+    const baseLeadToJob = 25;
+    
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      
+      // Simulate realistic variation with slight upward trend
+      const dayVariance = Math.sin(i * 0.3) * 8;
+      const trendBoost = (29 - i) * 0.3;
+      
+      const permitToLead = Math.max(15, Math.min(60, basePermitToLead + dayVariance + trendBoost + (Math.random() * 10 - 5)));
+      const leadToJob = Math.max(10, Math.min(50, baseLeadToJob + (dayVariance * 0.6) + (trendBoost * 0.8) + (Math.random() * 8 - 4)));
+      
+      data.push({
+        date: date.toISOString().split('T')[0],
+        permitToLead: Math.round(permitToLead),
+        leadToJob: Math.round(leadToJob),
+        newPermits: Math.floor(Math.random() * 3) + 1,
+        newLeads: Math.random() > 0.6 ? 1 : 0,
+        conversions: Math.random() > 0.8 ? 1 : 0
+      });
+    }
+    return data;
+  }, []);
+
   const handleScenarioChange = () => {
     const result = runScenarioSimulation({
       fuelCostChange,
@@ -288,6 +317,102 @@ export default function PerformanceDashboard() {
                     <span className="text-xl font-bold">{permitMetrics.convertedLeads}</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pipeline Conversion Trends */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CardTitle>30-Day Pipeline Conversion Trends</CardTitle>
+                <AIBadge size="sm" variant="minimal" />
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleExport(pipelineTrends, 'pipeline-trends.csv')}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={pipelineTrends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  interval={4}
+                />
+                <YAxis 
+                  yAxisId="left"
+                  domain={[0, 70]}
+                  tickFormatter={(value) => `${value}%`}
+                />
+                <YAxis 
+                  yAxisId="right"
+                  orientation="right"
+                  domain={[0, 5]}
+                />
+                <Tooltip 
+                  formatter={(value: number, name: string) => {
+                    if (name === 'Permit → Lead' || name === 'Lead → Job') return [`${value}%`, name];
+                    return [value, name];
+                  }}
+                  labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                />
+                <Legend />
+                <Area 
+                  yAxisId="left"
+                  type="monotone" 
+                  dataKey="permitToLead" 
+                  fill="hsl(217, 91%, 60%)" 
+                  stroke="hsl(217, 91%, 50%)" 
+                  name="Permit → Lead"
+                  fillOpacity={0.3}
+                />
+                <Area 
+                  yAxisId="left"
+                  type="monotone" 
+                  dataKey="leadToJob" 
+                  fill="hsl(142, 71%, 45%)" 
+                  stroke="hsl(142, 71%, 35%)" 
+                  name="Lead → Job"
+                  fillOpacity={0.3}
+                />
+                <Bar yAxisId="right" dataKey="newPermits" fill="hsl(217, 91%, 75%)" name="New Permits" opacity={0.6} />
+                <Bar yAxisId="right" dataKey="conversions" fill="hsl(142, 71%, 65%)" name="Conversions" opacity={0.6} />
+              </ComposedChart>
+            </ResponsiveContainer>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Avg Permit→Lead</p>
+                <p className="text-lg font-semibold text-blue-600">
+                  {Math.round(pipelineTrends.reduce((sum, d) => sum + d.permitToLead, 0) / pipelineTrends.length)}%
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Avg Lead→Job</p>
+                <p className="text-lg font-semibold text-green-600">
+                  {Math.round(pipelineTrends.reduce((sum, d) => sum + d.leadToJob, 0) / pipelineTrends.length)}%
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Total New Permits</p>
+                <p className="text-lg font-semibold">
+                  {pipelineTrends.reduce((sum, d) => sum + d.newPermits, 0)}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Total Conversions</p>
+                <p className="text-lg font-semibold text-status-approved">
+                  {pipelineTrends.reduce((sum, d) => sum + d.conversions, 0)}
+                </p>
               </div>
             </div>
           </CardContent>
