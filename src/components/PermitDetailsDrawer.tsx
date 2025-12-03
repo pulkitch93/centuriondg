@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
 import { Permit } from '@/types/municipality';
 import { Lead, PermitLeadStatus } from '@/types/lead';
+import { calculateEarthworkScore, getScoreColor } from '@/lib/permitScoring';
 import { format } from 'date-fns';
-import { MapPin, Building2, User, Mail, Phone, Calendar, FileText, Briefcase, ArrowRight } from 'lucide-react';
+import { MapPin, Building2, User, Mail, Phone, Calendar, FileText, Briefcase, ArrowRight, Sparkles, CheckCircle } from 'lucide-react';
 
 interface PermitDetailsDrawerProps {
   permit: Permit | null;
@@ -63,6 +65,48 @@ export function PermitDetailsDrawer({
             <Badge className="bg-primary/20 text-primary">{permit.status}</Badge>
             {getEarthworkBadge(permit.estimatedEarthworkFlag)}
           </div>
+
+          <Separator />
+
+          {/* AI Score Section */}
+          {(() => {
+            const aiScore = calculateEarthworkScore(permit);
+            return (
+              <div className="space-y-3">
+                <h4 className="font-medium text-foreground flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  AI Earthwork Analysis
+                </h4>
+                <Card className="p-4 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Earthwork Likelihood</span>
+                      <span className={`text-2xl font-bold ${getScoreColor(aiScore.score)}`}>
+                        {aiScore.score}%
+                      </span>
+                    </div>
+                    <Progress value={aiScore.score} className="h-2" />
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Badge variant="outline" className="text-xs">
+                        Confidence: {aiScore.confidence}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground">Analysis Factors:</p>
+                      <ul className="space-y-1">
+                        {aiScore.factors.map((factor, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                            <CheckCircle className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                            {factor}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            );
+          })()}
 
           <Separator />
 
