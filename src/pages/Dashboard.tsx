@@ -66,6 +66,9 @@ export default function Dashboard() {
               <Link to="/compliance">
                 <Button variant="outline">Compliance</Button>
               </Link>
+              <Link to="/permit-integrations">
+                <Button variant="outline">Permit Integrations</Button>
+              </Link>
               <Link to="/sites">
                 <Button variant="outline">Job Board</Button>
               </Link>
