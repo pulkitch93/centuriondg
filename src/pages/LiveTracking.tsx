@@ -56,7 +56,7 @@ export default function LiveTracking() {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-80.8431, 35.2271], // Charlotte, NC
+      center: [-78.8986, 35.9940], // Raleigh-Durham, NC
       zoom: 10,
     });
 

@@ -59,7 +59,7 @@ export const initializeComplianceData = () => {
         issueDate: '2025-01-15',
         expirationDate: '2025-02-15',
         requiredAction: 'Renewal within 7 days',
-        authority: 'Charlotte-Mecklenburg Environmental Services',
+        authority: 'Durham County Environmental Services',
         linkedSiteId: 'EX-102',
         status: 'expiring-soon',
         verifiedBy: 'Environmental Specialist',
