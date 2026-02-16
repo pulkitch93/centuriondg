@@ -14,7 +14,7 @@ export interface TourStep {
 export const tourSteps: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Welcome to Centurion DG',
+    title: 'Welcome to EarthFlow',
     description: 'This guided tour will walk you through the key modules of our AI-powered earthwork logistics platform. Each module contains sample data so you can see the platform in action.',
     route: '/',
     icon: 'Sparkles',

@@ -63,7 +63,7 @@ export default function Dashboard() {
                 <TooltipTrigger asChild>
                   <Link to="/" className="hover:opacity-80 transition-opacity">
                     <div>
-                      <h1 className="text-2xl font-bold text-foreground">Centurion DG Platform</h1>
+                      <h1 className="text-2xl font-bold text-foreground">EarthFlow Platform</h1>
                       <p className="text-sm text-muted-foreground">Intelligent Earthwork Logistics</p>
                     </div>
                   </Link>
