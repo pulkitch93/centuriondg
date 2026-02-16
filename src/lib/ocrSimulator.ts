@@ -27,7 +27,7 @@ export const simulateOCR = (fileName: string, documentType: string): OCRResult =
       issueDate: new Date().toISOString().split('T')[0],
       expirationDate: new Date(baseDate.setMonth(baseDate.getMonth() + 6)).toISOString().split('T')[0],
       requiredAction: 'Renewal required 30 days before expiration',
-      authority: 'Charlotte-Mecklenburg Environmental Services',
+      authority: 'Durham County Environmental Services',
       confidence: 0.92
     },
     'hauler-insurance': {

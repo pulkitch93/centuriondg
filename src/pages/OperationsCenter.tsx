@@ -75,7 +75,7 @@ export default function OperationsCenter() {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
-      center: [-80.8431, 35.2271],
+      center: [-78.8986, 35.9940],
       zoom: 9,
     });
 
